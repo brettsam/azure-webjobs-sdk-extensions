@@ -3,7 +3,7 @@
 
 using System.Diagnostics.CodeAnalysis;
 
-namespace WebJobs.Mobile.Test.EasyTables
+namespace Microsoft.Azure.WebJobs.Extensions.Tests.EasyTables
 {
     [SuppressMessage("Microsoft.Performance", "CA1812:AvoidUninstantiatedInternalClasses", Justification = "This class is used for testing via reflection.")]
     internal class NoId

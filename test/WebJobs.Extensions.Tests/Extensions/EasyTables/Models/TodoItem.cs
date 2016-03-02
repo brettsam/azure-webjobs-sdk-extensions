@@ -3,7 +3,7 @@
 
 using System;
 
-namespace WebJobs.Mobile.Test.EasyTables
+namespace Microsoft.Azure.WebJobs.Extensions.Tests.EasyTables
 {
     internal class TodoItem
     {

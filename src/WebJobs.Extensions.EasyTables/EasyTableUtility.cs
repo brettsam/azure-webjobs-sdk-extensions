@@ -7,7 +7,7 @@ using System.Linq;
 using System.Reflection;
 using Newtonsoft.Json.Linq;
 
-namespace WebJobs.Mobile.EasyTables
+namespace Microsoft.Azure.WebJobs.Extensions.EasyTables
 {
     internal static class EasyTableUtility
     {

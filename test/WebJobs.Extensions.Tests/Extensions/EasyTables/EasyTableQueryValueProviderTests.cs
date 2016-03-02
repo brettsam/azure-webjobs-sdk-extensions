@@ -2,11 +2,11 @@
 // Licensed under the MIT License. See License.txt in the project root for license information.
 
 using System.Linq;
+using Microsoft.Azure.WebJobs.Extensions.EasyTables;
 using Microsoft.WindowsAzure.MobileServices;
-using WebJobs.Extensions.EasyTables;
 using Xunit;
 
-namespace WebJobs.Mobile.Test.EasyTables
+namespace Microsoft.Azure.WebJobs.Extensions.Tests.EasyTables
 {
     public class EasyTableQueryValueProviderTests
     {

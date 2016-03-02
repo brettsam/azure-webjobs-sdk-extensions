@@ -6,7 +6,7 @@ using System.Reflection;
 using Microsoft.Azure.WebJobs.Host.Bindings;
 using Microsoft.WindowsAzure.MobileServices;
 
-namespace WebJobs.Extensions.EasyTables
+namespace Microsoft.Azure.WebJobs.Extensions.EasyTables
 {
     internal class EasyTableTableValueProvider<T> : IValueProvider
     {

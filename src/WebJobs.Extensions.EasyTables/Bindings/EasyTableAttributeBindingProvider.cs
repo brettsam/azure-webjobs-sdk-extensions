@@ -5,13 +5,11 @@ using System;
 using System.Globalization;
 using System.Reflection;
 using System.Threading.Tasks;
-using Microsoft.Azure.WebJobs;
 using Microsoft.Azure.WebJobs.Host;
 using Microsoft.Azure.WebJobs.Host.Bindings;
 using Microsoft.WindowsAzure.MobileServices;
-using WebJobs.Mobile.EasyTables;
 
-namespace WebJobs.Extensions.EasyTables
+namespace Microsoft.Azure.WebJobs.Extensions.EasyTables
 {
     internal class EasyTableAttributeBindingProvider : IBindingProvider
     {

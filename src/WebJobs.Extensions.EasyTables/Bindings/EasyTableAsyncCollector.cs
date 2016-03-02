@@ -7,7 +7,7 @@ using Microsoft.Azure.WebJobs.ServiceBus;
 using Microsoft.WindowsAzure.MobileServices;
 using Newtonsoft.Json.Linq;
 
-namespace WebJobs.Extensions.EasyTables
+namespace Microsoft.Azure.WebJobs.Extensions.EasyTables
 {
     internal class EasyTableAsyncCollector<T> : IFlushCollector<T>
     {

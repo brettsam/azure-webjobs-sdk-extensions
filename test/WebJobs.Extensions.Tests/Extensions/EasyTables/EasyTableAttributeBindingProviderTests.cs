@@ -8,16 +8,15 @@ using System.Linq;
 using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.Azure.WebJobs;
+using Microsoft.Azure.WebJobs.Extensions.EasyTables;
 using Microsoft.Azure.WebJobs.Extensions.Tests.Common;
 using Microsoft.Azure.WebJobs.Host.Bindings;
 using Microsoft.Azure.WebJobs.ServiceBus;
 using Microsoft.WindowsAzure.MobileServices;
 using Newtonsoft.Json.Linq;
-using WebJobs.Extensions.EasyTables;
 using Xunit;
 
-namespace WebJobs.Mobile.Test.EasyTables
+namespace Microsoft.Azure.WebJobs.Extensions.Tests.EasyTables
 {
     public class EasyTableAttributeBindingProviderTests
     {

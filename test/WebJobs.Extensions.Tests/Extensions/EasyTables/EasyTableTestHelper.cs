@@ -5,12 +5,11 @@ using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Reflection;
-using Microsoft.Azure.WebJobs;
+using Microsoft.Azure.WebJobs.Extensions.EasyTables;
 using Microsoft.WindowsAzure.MobileServices;
 using Newtonsoft.Json.Linq;
-using WebJobs.Extensions.EasyTables;
 
-namespace WebJobs.Mobile.Test.EasyTables
+namespace Microsoft.Azure.WebJobs.Extensions.Tests.EasyTables
 {
     internal class EasyTableTestHelper
     {

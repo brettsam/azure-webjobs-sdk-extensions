@@ -3,7 +3,7 @@
 
 using System;
 
-namespace WebJobs.Extensions.EasyTables
+namespace Microsoft.Azure.WebJobs.Extensions.EasyTables
 {
     /// <summary>
     /// Attribute used to binds a parameter to an EventTable type.

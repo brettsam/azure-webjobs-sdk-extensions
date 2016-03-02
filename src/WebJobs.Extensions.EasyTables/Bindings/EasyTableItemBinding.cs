@@ -8,9 +8,8 @@ using System.Threading.Tasks;
 using Microsoft.Azure.WebJobs.Host.Bindings;
 using Microsoft.Azure.WebJobs.Host.Bindings.Path;
 using Microsoft.Azure.WebJobs.Host.Protocols;
-using WebJobs.Mobile.EasyTables;
 
-namespace WebJobs.Extensions.EasyTables
+namespace Microsoft.Azure.WebJobs.Extensions.EasyTables
 {
     /// <summary>
     /// Provides an <see cref="IBinding"/> for valid input item parameters decorated with

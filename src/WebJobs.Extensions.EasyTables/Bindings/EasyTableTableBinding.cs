@@ -8,9 +8,8 @@ using Microsoft.Azure.WebJobs.Host.Bindings;
 using Microsoft.Azure.WebJobs.Host.Protocols;
 using Microsoft.WindowsAzure.MobileServices;
 using Newtonsoft.Json.Linq;
-using WebJobs.Mobile.EasyTables;
 
-namespace WebJobs.Extensions.EasyTables
+namespace Microsoft.Azure.WebJobs.Extensions.EasyTables
 {
     /// <summary>
     /// Provides an <see cref="IBinding"/> for valid input table parameters decorated with

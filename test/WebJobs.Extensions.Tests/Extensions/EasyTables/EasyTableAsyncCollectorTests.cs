@@ -2,14 +2,14 @@
 // Licensed under the MIT License. See License.txt in the project root for license information.
 
 using System.Threading.Tasks;
+using Microsoft.Azure.WebJobs.Extensions.EasyTables;
 using Microsoft.Azure.WebJobs.ServiceBus;
 using Microsoft.WindowsAzure.MobileServices;
 using Moq;
 using Newtonsoft.Json.Linq;
-using WebJobs.Extensions.EasyTables;
 using Xunit;
 
-namespace WebJobs.Mobile.Test.EasyTables
+namespace Microsoft.Azure.WebJobs.Extensions.Tests.EasyTables
 {
     public class EasyTableAsyncCollectorTests
     {

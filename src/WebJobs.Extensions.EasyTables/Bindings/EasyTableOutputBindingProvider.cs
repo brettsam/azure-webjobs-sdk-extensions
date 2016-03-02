@@ -4,12 +4,10 @@
 using System;
 using System.Reflection;
 using System.Threading.Tasks;
-using Microsoft.Azure.WebJobs;
 using Microsoft.Azure.WebJobs.Host.Bindings;
 using Microsoft.Azure.WebJobs.ServiceBus;
-using WebJobs.Extensions.EasyTables;
 
-namespace WebJobs.Mobile.EasyTables
+namespace Microsoft.Azure.WebJobs.Extensions.EasyTables
 {
     /// <summary>
     /// Provides an <see cref="IBinding"/> for valid output parameters decorated with

@@ -2,12 +2,11 @@
 // Licensed under the MIT License. See License.txt in the project root for license information.
 
 using System;
-using Microsoft.Azure.WebJobs;
+using Microsoft.Azure.WebJobs.Extensions.EasyTables;
 using Newtonsoft.Json.Linq;
-using WebJobs.Mobile.EasyTables;
 using Xunit;
 
-namespace WebJobs.Mobile.Test.EasyTables
+namespace Microsoft.Azure.WebJobs.Extensions.Tests.EasyTables
 {
     public class EasyTableOutputBindingProviderTests
     {

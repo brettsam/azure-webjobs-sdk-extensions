@@ -3,7 +3,7 @@
 
 using System;
 using System.Diagnostics.CodeAnalysis;
-using WebJobs.Extensions.EasyTables;
+using Microsoft.Azure.WebJobs.Extensions.EasyTables;
 
 namespace Microsoft.Azure.WebJobs
 {
