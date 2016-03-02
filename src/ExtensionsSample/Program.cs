@@ -24,7 +24,7 @@ namespace ExtensionsSample
 
             // See https://github.com/Azure/azure-webjobs-sdk/wiki/Running-Locally for details
             // on how to set up your local environment
-            if (true)
+            if (config.IsDevelopment)
             {
                 config.UseDevelopmentSettings();
                 filesConfig.RootPath = @"c:\temp\files";

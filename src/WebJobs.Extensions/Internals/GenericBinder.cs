@@ -101,10 +101,10 @@ namespace Microsoft.Azure.WebJobs.ServiceBus
         /// <param name="collectorGenericType">The generic type that must implement <see cref="IFlushCollector{T}"/> and have a public constructor with at most one parameter.</param>
         /// <param name="collectorGenericArgumentType">The generic argument type for the <see cref="IFlushCollector{T}"/></param>
         /// <param name="converterManager">A converter manager to pass along.</param>        
-        /// <param name="contextBinder">A Func that returns the TContext to be used by the <see cref="IFlushCollector{T}"/></param>
+        /// <param name="invokeStringBinder">A <see cref="Func{T, TContext}"/> that returns the TContext to be used by the <see cref="IFlushCollector{T}"/></param>
         /// <returns></returns>
         public static IBinding BindGenericCollector<TContext>(ParameterInfo parameter, Type collectorGenericType, Type collectorGenericArgumentType,
-            IConverterManager converterManager, Func<string, TContext> contextBinder)
+            IConverterManager converterManager, Func<string, TContext> invokeStringBinder)
         {
             if (!collectorGenericType.IsGenericTypeDefinition)
             {
@@ -126,13 +126,13 @@ namespace Microsoft.Azure.WebJobs.ServiceBus
 
             // Create the method and parameters.
             MethodInfo bindCollectorMethod = typeof(GenericBinder).GetMethod("BindCollector").MakeGenericMethod(collectorGenericArgumentType, typeof(TContext));
-            object[] parameters = new object[] { parameter, converterManager, del, null, contextBinder };
+            object[] parameters = new object[] { parameter, converterManager, del, null, invokeStringBinder };
 
             return bindCollectorMethod.Invoke(null, parameters) as IBinding;
         }   
 
         /// <summary>
-        /// A method that is used as a instantiated as a Func to pass to BindCollector
+        /// A method that is used as a instantiated as a <see cref="Func{T1, T2, TResult}"/> to pass to BindCollector
         /// </summary>
         /// <typeparam name="TCollector">The type of collector to create for the binding.</typeparam>
         /// <typeparam name="TCore">The 'core' type of the binding.</typeparam>
