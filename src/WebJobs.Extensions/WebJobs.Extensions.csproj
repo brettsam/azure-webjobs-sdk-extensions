@@ -123,6 +123,63 @@
     <Compile Include="Framework\Bindings\StreamValueBinder.cs" />
     <Compile Include="Framework\Bindings\ValueBinder.cs" />
     <Compile Include="GlobalSuppressions.cs" />
+    <Compile Include="Internals\Bindings\CompositeBindingProvider.cs">
+      <ExcludeFromStyleCop>true</ExcludeFromStyleCop>
+    </Compile>
+    <Compile Include="Internals\CommonCollectorBinding.cs">
+      <ExcludeFromStyleCop>true</ExcludeFromStyleCop>
+    </Compile>
+    <Compile Include="Internals\CommonTriggerBinding.cs">
+      <ExcludeFromStyleCop>true</ExcludeFromStyleCop>
+    </Compile>
+    <Compile Include="Internals\ConstantValueProvider.cs">
+      <ExcludeFromStyleCop>true</ExcludeFromStyleCop>
+    </Compile>
+    <Compile Include="Internals\ConverterManager.cs">
+      <ExcludeFromStyleCop>true</ExcludeFromStyleCop>
+    </Compile>
+    <Compile Include="Internals\GenericBinder.cs">
+      <ExcludeFromStyleCop>true</ExcludeFromStyleCop>
+    </Compile>
+    <Compile Include="Internals\IConverterManager.cs">
+      <ExcludeFromStyleCop>true</ExcludeFromStyleCop>    
+    </Compile>
+    <Compile Include="Internals\IFlushCollector.cs">
+      <ExcludeFromStyleCop>true</ExcludeFromStyleCop>
+    </Compile>
+    <Compile Include="Internals\ITriggerBindingStrategy.cs">
+      <ExcludeFromStyleCop>true</ExcludeFromStyleCop>
+    </Compile>
+    <Compile Include="Internals\Triggers\ITriggerDataArgumentBinding.cs">
+      <ExcludeFromStyleCop>true</ExcludeFromStyleCop>
+    </Compile>
+    <Compile Include="Internals\TriggerArgumentBinding\ArraryTriggerArgumentBinding.cs">
+      <ExcludeFromStyleCop>true</ExcludeFromStyleCop>
+    </Compile>
+    <Compile Include="Internals\TriggerArgumentBinding\PocoTriggerArgumentBinding.cs">
+      <ExcludeFromStyleCop>true</ExcludeFromStyleCop>
+    </Compile>
+    <Compile Include="Internals\TriggerArgumentBinding\SimpleTriggerArgumentBinding.cs">
+      <ExcludeFromStyleCop>true</ExcludeFromStyleCop>
+    </Compile>
+    <Compile Include="Internals\TriggerArgumentBinding\StringTriggerArgumentBinding.cs">
+      <ExcludeFromStyleCop>true</ExcludeFromStyleCop>
+    </Compile>
+    <Compile Include="Internals\OutArgumentBinding\CommonAsyncCollectorValueProvider.cs">
+      <ExcludeFromStyleCop>true</ExcludeFromStyleCop>
+    </Compile>
+    <Compile Include="Internals\OutArgumentBinding\OutArrayValueProvider.cs">
+      <ExcludeFromStyleCop>true</ExcludeFromStyleCop>
+    </Compile>
+    <Compile Include="Internals\OutArgumentBinding\OutValueProvider.cs">
+      <ExcludeFromStyleCop>true</ExcludeFromStyleCop>
+    </Compile>
+    <Compile Include="Internals\SyncAsyncCollectorAdapter.cs">
+      <ExcludeFromStyleCop>true</ExcludeFromStyleCop>
+    </Compile>
+    <Compile Include="Internals\TypedAsyncCollectorAdapter.cs">
+      <ExcludeFromStyleCop>true</ExcludeFromStyleCop>
+    </Compile>
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Extensions\Timers\Bindings\TimerTriggerBinding.cs" />
     <Compile Include="Extensions\Timers\Config\TimerJobHostConfigurationExtensions.cs" />

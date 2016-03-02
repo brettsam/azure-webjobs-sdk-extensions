@@ -24,16 +24,17 @@ namespace ExtensionsSample
 
             // See https://github.com/Azure/azure-webjobs-sdk/wiki/Running-Locally for details
             // on how to set up your local environment
-            if (config.IsDevelopment)
+            if (true)
             {
                 config.UseDevelopmentSettings();
                 filesConfig.RootPath = @"c:\temp\files";
             }
-
+                        
             config.UseFiles(filesConfig);
             config.UseTimers();
             config.UseSample();
             config.UseCore();
+            config.UseEasyTables();
             var sendGridConfiguration = new SendGridConfiguration()
             {
                 ToAddress = "admin@webjobssamples.com",
@@ -42,7 +43,7 @@ namespace ExtensionsSample
             config.UseSendGrid(sendGridConfiguration);
 
             ConfigureTraceMonitor(config, sendGridConfiguration);
-            
+
             EnsureSampleDirectoriesExist(filesConfig.RootPath);
 
             WebHooksConfiguration webHooksConfig = new WebHooksConfiguration();
@@ -56,6 +57,7 @@ namespace ExtensionsSample
             host.Call(typeof(SampleSamples).GetMethod("Sample_BindToStream"));
             host.Call(typeof(SampleSamples).GetMethod("Sample_BindToString"));
             host.Call(typeof(TableSamples).GetMethod("CustomBinding"));
+            host.Call(typeof(EasyTableSamples).GetMethod("InsertItem"));
 
             host.RunAndBlock();
         }
