@@ -56,7 +56,7 @@ namespace ExtensionsSample
         // the string value of the queued item.
         public static void DequeueAndProcess(
             [QueueTrigger("ToProcess")] string itemId,
-            [EasyTable(id: "{QueueTrigger}")] Item itemToProcess)
+            [EasyTable(Id = "{QueueTrigger}")] Item itemToProcess)
         {
             itemToProcess.IsProcessed = true;
             itemToProcess.ProcessedAt = DateTimeOffset.Now;

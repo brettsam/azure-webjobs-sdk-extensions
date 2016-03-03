@@ -159,7 +159,11 @@ namespace Microsoft.Azure.WebJobs.Extensions.Tests.EasyTables
             resolver.Values.Add("MyTableName", "TestTable");
             resolver.Values.Add("MyId", "abc123");
 
-            var attribute = new EasyTableAttribute("%MyTableName%", "%MyId%");
+            var attribute = new EasyTableAttribute
+            {
+                TableName = "%MyTableName%",
+                Id = "%MyId%"
+            };
 
             // Act
             var context = EasyTableAttributeBindingProvider.CreateContext(_easyTableConfig, attribute, resolver);

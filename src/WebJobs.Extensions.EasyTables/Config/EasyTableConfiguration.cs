@@ -3,9 +3,6 @@
 
 using System;
 using System.Configuration;
-using Microsoft.Azure.WebJobs;
-using Microsoft.Azure.WebJobs.Host;
-using Microsoft.Azure.WebJobs.Host.Bindings;
 using Microsoft.Azure.WebJobs.Host.Config;
 
 namespace Microsoft.Azure.WebJobs.Extensions.EasyTables
@@ -47,9 +44,7 @@ namespace Microsoft.Azure.WebJobs.Extensions.EasyTables
                 throw new ArgumentNullException(nameof(context));
             }
 
-            // Register our extension binding providers
-            IExtensionRegistry extensions = context.Config.GetService<IExtensionRegistry>();
-            extensions.RegisterExtension<IBindingProvider>(
+            context.Config.RegisterBindingExtension(
                 new EasyTableAttributeBindingProvider(context.Config, this, context.Config.NameResolver));
         }
     }

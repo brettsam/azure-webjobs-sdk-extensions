@@ -3,10 +3,10 @@
 
 using System;
 
-namespace Microsoft.Azure.WebJobs.Extensions.EasyTables
+namespace Microsoft.Azure.WebJobs
 {
     /// <summary>
-    /// Attribute used to binds a parameter to an EventTable type.
+    /// Attribute used to binds a parameter to an EasyTable type.
     /// </summary>
     /// <remarks>
     /// The method parameter type can be one of the following:
@@ -23,25 +23,14 @@ namespace Microsoft.Azure.WebJobs.Extensions.EasyTables
     public sealed class EasyTableAttribute : Attribute
     {
         /// <summary>
-        /// Binds the parameter to an EasyTable input or output binding.
-        /// </summary>
-        /// <param name="tableName">The name of the table to which the parameter applies.</param>
-        /// <param name="id">The Id of the item to retrieve from the specified (or implied) table.</param>
-        public EasyTableAttribute(string tableName = null, string id = null)
-        {
-            this.TableName = tableName;
-            this.Id = id;
-        }
-
-        /// <summary>
         /// The name of the table to which the parameter applies.
         /// Required if using a <see cref="JObject"/> parameter; otherwise it is implied from the parameter type.
         /// </summary>
-        public string TableName { get; }
+        public string TableName { get; set; }
 
         /// <summary>
         /// The Id of the item to retrieve from the specified (or implied) table.
         /// </summary>
-        public string Id { get; }
+        public string Id { get; set; }
     }
 }
