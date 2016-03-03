@@ -7,7 +7,10 @@ using System.Reflection;
 using System.Threading.Tasks;
 using Microsoft.Azure.WebJobs.Host;
 using Microsoft.Azure.WebJobs.Host.Bindings;
+using Microsoft.Azure.WebJobs.ServiceBus;
 using Microsoft.WindowsAzure.MobileServices;
+using Newtonsoft.Json.Linq;
+using System.Text;
 
 namespace Microsoft.Azure.WebJobs.Extensions.EasyTables
 {
@@ -45,6 +48,13 @@ namespace Microsoft.Azure.WebJobs.Extensions.EasyTables
                     "The Easy Tables Uri must be set either via a '{0}' app setting or directly in code via EasyTableConfiguration.MobileAppUri.",
                     EasyTableConfiguration.AzureWebJobsMobileAppUriName));
             }
+            
+            IConverterManager converterManager = _jobHostConfig.GetOrCreateConverterManager();
+            converterManager.AddConverter<byte[], JObject>((bytes) =>
+            {
+                string jsonStr = Encoding.UTF8.GetString(bytes);
+                return JObject.Parse(jsonStr);
+            });
 
             EasyTableContext easyTableContext = CreateContext(_easyTableConfig, attribute, _nameResolver);
 

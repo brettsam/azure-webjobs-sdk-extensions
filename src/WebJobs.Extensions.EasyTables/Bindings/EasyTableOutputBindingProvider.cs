@@ -6,6 +6,7 @@ using System.Reflection;
 using System.Threading.Tasks;
 using Microsoft.Azure.WebJobs.Host.Bindings;
 using Microsoft.Azure.WebJobs.ServiceBus;
+using Newtonsoft.Json.Linq;
 
 namespace Microsoft.Azure.WebJobs.Extensions.EasyTables
 {
@@ -43,6 +44,16 @@ namespace Microsoft.Azure.WebJobs.Extensions.EasyTables
             }
 
             ParameterInfo parameter = context.Parameter;
+
+            // this is a special case for scripting
+            if (parameter.ParameterType == typeof(IAsyncCollector<byte[]>))
+            {
+                IBinding binding = GenericBinder.BindCollector<JObject, EasyTableContext>(parameter, _jobHostConfig.GetOrCreateConverterManager(),
+                    (easyTableContext, valueBindingContext) => new EasyTableAsyncCollector<JObject>(easyTableContext), string.Empty,
+                    (s) => _easyTableContext);
+
+                return Task.FromResult<IBinding>(binding);
+            }
 
             if (IsValidOutType(parameter.ParameterType) ||
                 IsValidCollectorType(parameter.ParameterType))

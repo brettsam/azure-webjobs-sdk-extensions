@@ -57,7 +57,8 @@ namespace Microsoft.Azure.WebJobs.Extensions.Tests.EasyTables
             [EasyTable] IAsyncCollector<JObject> jobjectAsyncCollector,
             [EasyTable] IAsyncCollector<TodoItem> pocoAsyncCollector,
             [EasyTable] ICollector<JObject> jobjectCollector,
-            [EasyTable] ICollector<TodoItem> pocoCollector)
+            [EasyTable] ICollector<TodoItem> pocoCollector,
+            [EasyTable] IAsyncCollector<byte[]> byteCollector)
         {
             jobjectOut = null;
             pocoOut = null;

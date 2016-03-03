@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Reflection;
+using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Azure.WebJobs.Extensions.EasyTables;
@@ -134,6 +135,32 @@ namespace Microsoft.Azure.WebJobs.Extensions.Tests.EasyTables
 
             // Assert
             Assert.Equal(expectedBindingType, valueProvider.GetType());
+        }
+
+        [Fact]        
+        public async Task IAsyncCollectorOfBytes_Returns_CorrectValueProvider()
+        {
+            // This is a special case for scripting to work.
+
+            // Arrange
+            ParameterInfo byteCollectorParam = EasyTableTestHelper.GetValidOutputParameters().ToArray()[8];
+            var provider = new EasyTableAttributeBindingProvider(_jobConfig, _easyTableConfig, _jobConfig.NameResolver);
+            var context = new BindingProviderContext(byteCollectorParam, null, CancellationToken.None);
+            IBinding binding = await provider.TryCreateAsync(context);
+
+            // Act
+            IValueProvider valueProvider = await binding.BindAsync(null, null);
+
+            var collector = valueProvider.GetValue() as IAsyncCollector<byte[]>;
+
+            JObject jObject = new JObject();
+            jObject["id"] = Guid.NewGuid().ToString();
+            jObject["text"] = "test";
+
+            var bytes = Encoding.UTF8.GetBytes(jObject.ToString());
+            await collector.AddAsync(bytes);
+
+            // Assert
         }
 
         [Theory]
