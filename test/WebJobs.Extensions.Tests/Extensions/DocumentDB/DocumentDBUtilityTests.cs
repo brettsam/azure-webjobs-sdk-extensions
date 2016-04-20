@@ -4,13 +4,10 @@
 extern alias DocumentDB;
 
 using System;
-using System.Diagnostics;
-using System.Linq;
 using System.Net;
 using System.Threading.Tasks;
 using DocumentDB::Microsoft.Azure.WebJobs.Extensions.DocumentDB;
 using Microsoft.Azure.Documents;
-using Microsoft.Azure.WebJobs.Extensions.Tests.Common;
 using Microsoft.Azure.WebJobs.Extensions.Tests.Extensions.DocumentDB.Models;
 using Moq;
 using Xunit;
@@ -20,7 +17,7 @@ namespace Microsoft.Azure.WebJobs.Extensions.Tests.Extensions.DocumentDB
     public class DocumentDBUtilityTests
     {
         [Fact]
-        public async Task ExecuteAndIgnoreStatusCode_Ignores_SpecifiedStatusCode()
+        public async Task RetryAsync_Ignores_SpecifiedStatusCode()
         {
             // Arrange
             string testString = "Method called!";
@@ -28,11 +25,11 @@ namespace Microsoft.Azure.WebJobs.Extensions.Tests.Extensions.DocumentDB
             var ex = DocumentDBTestUtility.CreateDocumentClientException(HttpStatusCode.Conflict);
 
             // Act
-            await DocumentDBUtility.ExecuteAndIgnoreStatusCodeAsync(HttpStatusCode.Conflict, () =>
+            await DocumentDBUtility.RetryAsync<object>(() =>
             {
                 s = testString;
                 throw ex;
-            });
+            }, 0, HttpStatusCode.Conflict, HttpStatusCode.NotFound);
 
             // Assert
             Assert.Equal(testString, s);
@@ -40,7 +37,7 @@ namespace Microsoft.Azure.WebJobs.Extensions.Tests.Extensions.DocumentDB
         }
 
         [Fact]
-        public async Task ExecuteAndIgnoreStatusCode_DoesNotIgnore_OtherStatusCodes()
+        public async Task RetryAsync_DoesNotIgnore_OtherStatusCodes()
         {
             // Arrange
             string testString = "Method called!";
@@ -50,11 +47,11 @@ namespace Microsoft.Azure.WebJobs.Extensions.Tests.Extensions.DocumentDB
             // Act
             var thrownEx = await Assert.ThrowsAsync<DocumentClientException>(() =>
             {
-                return DocumentDBUtility.ExecuteAndIgnoreStatusCodeAsync(HttpStatusCode.Conflict, () =>
+                return DocumentDBUtility.RetryAsync<object>(() =>
                 {
                     s = testString;
                     throw ex;
-                });
+                }, 0, HttpStatusCode.Conflict, HttpStatusCode.NotFound);
             });
 
             // Assert
@@ -63,7 +60,7 @@ namespace Microsoft.Azure.WebJobs.Extensions.Tests.Extensions.DocumentDB
         }
 
         [Fact]
-        public async Task ExecuteWithRetriesAsync_Retries_IfStatusCode429()
+        public async Task RetryAsync_Retries_IfStatusCode429()
         {
             // Arrange
             var mockUri = new Uri("https://someuri");
@@ -83,10 +80,10 @@ namespace Microsoft.Azure.WebJobs.Extensions.Tests.Extensions.DocumentDB
             var start = DateTime.UtcNow;
 
             // Act
-            var result = await DocumentDBUtility.ExecuteWithRetriesAsync(() =>
+            var result = await DocumentDBUtility.RetryAsync(() =>
             {
                 return mockService.Object.UpsertDocumentAsync(mockUri, mockItem);
-            }, 3);
+            }, 3, HttpStatusCode.NotFound);
 
             // Assert
             var stop = DateTime.UtcNow;
@@ -99,18 +96,18 @@ namespace Microsoft.Azure.WebJobs.Extensions.Tests.Extensions.DocumentDB
         [InlineData(0)]
         [InlineData(3)]
         [InlineData(10)]
-        public async Task ExecuteWithRetriesAsync_MaxRetries(int maxRetries)
+        public async Task RetryAsync_MaxRetries(int maxRetries)
         {
             // Arrange
             var mockUri = new Uri("https://someuri");
             var mockItem = new Item();
             var mockService = new Mock<IDocumentDBService>(MockBehavior.Strict);
             var tooManyRequestException = DocumentDBTestUtility.CreateDocumentClientException((HttpStatusCode)429);
-            mockService.Setup(m => m.UpsertDocumentAsync(mockUri, mockItem)).Throws(tooManyRequestException);            
+            mockService.Setup(m => m.UpsertDocumentAsync(mockUri, mockItem)).Throws(tooManyRequestException);
 
             // Act
             var docEx = await Assert.ThrowsAsync<DocumentClientException>(() =>
-                DocumentDBUtility.ExecuteWithRetriesAsync(() =>
+                DocumentDBUtility.RetryAsync(() =>
                 {
                     return mockService.Object.UpsertDocumentAsync(mockUri, mockItem);
                 }, maxRetries));
@@ -121,7 +118,7 @@ namespace Microsoft.Azure.WebJobs.Extensions.Tests.Extensions.DocumentDB
         }
 
         [Fact]
-        public async Task ExecuteWithRetriesAsync_Throws_IfErrorStatusCode()
+        public async Task RetryAsync_Throws_IfErrorStatusCode()
         {
             // Arrange
             var mockUri = new Uri("https://someuri");
@@ -136,7 +133,7 @@ namespace Microsoft.Azure.WebJobs.Extensions.Tests.Extensions.DocumentDB
             // Act
             var ex = await Assert.ThrowsAsync<DocumentClientException>(() =>
             {
-                return DocumentDBUtility.ExecuteWithRetriesAsync(() =>
+                return DocumentDBUtility.RetryAsync(() =>
                 {
                     return mockService.Object.UpsertDocumentAsync(mockUri, mockItem);
                 }, 3);
@@ -145,34 +142,6 @@ namespace Microsoft.Azure.WebJobs.Extensions.Tests.Extensions.DocumentDB
             // Assert
             mockService.VerifyAll();
             Assert.Equal(HttpStatusCode.NotFound, ex.StatusCode);
-        }
-
-        [Fact]
-        public async Task ExecuteWithRetriesAsync_CorrectlyIgnoresNotFound()
-        {
-            // Arrange
-            var mockUri = new Uri("https://someuri");
-            var mockItem = new Item();
-            var mockService = new Mock<IDocumentDBService>(MockBehavior.Strict);
-            var tooManyRequestException = DocumentDBTestUtility.CreateDocumentClientException((HttpStatusCode)429);
-            var notFoundException = DocumentDBTestUtility.CreateDocumentClientException(HttpStatusCode.NotFound);
-
-            mockService
-               .SetupSequence(m => m.UpsertDocumentAsync(mockUri, mockItem))
-               .Throws(tooManyRequestException)
-               .Throws(tooManyRequestException)
-               .Throws(tooManyRequestException)
-               .Throws(notFoundException);
-
-            // Act
-            var result = await DocumentDBUtility.ExecuteWithRetriesAsync(() =>
-                {
-                    return mockService.Object.UpsertDocumentAsync(mockUri, mockItem);
-                }, 3, ignoreNotFound: true);
-
-            // Assert
-            Assert.Null(result);
-            mockService.Verify(m => m.UpsertDocumentAsync(mockUri, mockItem), Times.Exactly(4));
         }
     }
 }
