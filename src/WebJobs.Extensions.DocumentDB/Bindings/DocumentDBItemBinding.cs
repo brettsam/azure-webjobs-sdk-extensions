@@ -25,7 +25,7 @@ namespace Microsoft.Azure.WebJobs.Extensions.DocumentDB
     /// <item><description><see cref="Document"/></description></item>
     /// </list>
     /// </remarks>
-    internal class DocumentDBItemBinding : IBinding, IBindingProvider
+    internal class DocumentDBItemBinding : IBinding
     {
         private ParameterInfo _parameter;
         private DocumentDBContext _context;

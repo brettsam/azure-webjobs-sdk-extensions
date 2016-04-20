@@ -26,7 +26,7 @@ namespace ExtensionsSample
 
             // See https://github.com/Azure/azure-webjobs-sdk/wiki/Running-Locally for details
             // on how to set up your local environment
-            if (config.IsDevelopment)
+            if (true)
             {
                 config.UseDevelopmentSettings();
                 filesConfig.RootPath = @"c:\temp\files";
@@ -59,20 +59,13 @@ namespace ExtensionsSample
             // Add or remove types from this list to choose which functions will 
             // be indexed by the JobHost.
             config.TypeLocator = new SamplesTypeLocator(
-                typeof(ErrorMonitoringSamples),
-                typeof(FileSamples),
-                typeof(MiscellaneousSamples),
-                typeof(SampleSamples),
-                typeof(SendGridSamples),
-                typeof(TableSamples),
-                typeof(TimerSamples),
-                typeof(WebHookSamples));
+                typeof(DocumentDBSamples));
 
-            host.Call(typeof(MiscellaneousSamples).GetMethod("ExecutionContext"));
-            host.Call(typeof(FileSamples).GetMethod("ReadWrite"));
-            host.Call(typeof(SampleSamples).GetMethod("Sample_BindToStream"));
-            host.Call(typeof(SampleSamples).GetMethod("Sample_BindToString"));
-            host.Call(typeof(TableSamples).GetMethod("CustomBinding"));
+            //host.Call(typeof(MiscellaneousSamples).GetMethod("ExecutionContext"));
+            //host.Call(typeof(FileSamples).GetMethod("ReadWrite"));
+            //host.Call(typeof(SampleSamples).GetMethod("Sample_BindToStream"));
+            //host.Call(typeof(SampleSamples).GetMethod("Sample_BindToString"));
+            //host.Call(typeof(TableSamples).GetMethod("CustomBinding"));
 
             host.RunAndBlock();
         }

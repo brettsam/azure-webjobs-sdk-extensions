@@ -3,6 +3,9 @@
 
 using System;
 using System.Configuration;
+using Microsoft.Azure.Documents.Client;
+using Microsoft.Azure.WebJobs.Host;
+using Microsoft.Azure.WebJobs.Host.Bindings;
 using Microsoft.Azure.WebJobs.Host.Config;
 
 namespace Microsoft.Azure.WebJobs.Extensions.DocumentDB
@@ -38,7 +41,14 @@ namespace Microsoft.Azure.WebJobs.Extensions.DocumentDB
                 throw new ArgumentNullException("context");
             }
 
-            context.Config.RegisterBindingExtension(new DocumentDBAttributeBindingProvider(context.Config, this, context.Trace));
+            var nameResolver = context.Config.GetService<INameResolver>();
+            var cm = context.Config.GetService<IConverterManager>();
+
+            var bf = new BindingFactory2(nameResolver, cm);
+            var ruleClient = bf.BindToExactType<DocumentDBAttribute, DocumentClient>((attr) => this.DocumentDBServiceFactory.CreateService(this.ConnectionString).GetClient());
+
+            IExtensionRegistry extensions = context.Config.GetService<IExtensionRegistry>();
+            extensions.RegisterBindingRules<DocumentDBAttribute>(ruleClient);
         }
 
         internal static string GetSettingFromConfigOrEnvironment(string key)
