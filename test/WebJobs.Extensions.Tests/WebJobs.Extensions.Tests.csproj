@@ -172,7 +172,6 @@
     <Compile Include="Common\TestNameResolver.cs" />
     <Compile Include="Common\TestTraceWriter.cs" />
     <Compile Include="Common\TypeUtilityTests.cs" />
-    <Compile Include="Extensions\DocumentDB\DocumentDBAttributeBindingProviderTests.cs" />
     <Compile Include="Extensions\Core\CoreBindingEndToEndTests.cs" />
     <Compile Include="Extensions\ApiHub\ApiHubBindingEndToEndTests.cs" />
     <Compile Include="Extensions\Core\ErrorTriggerAttributeTests.cs" />
@@ -182,9 +181,6 @@
     <Compile Include="Extensions\DocumentDB\DocumentDBClientValueProviderTests.cs" />
     <Compile Include="Extensions\DocumentDB\DocumentDBConnectionStringTests.cs" />
     <Compile Include="Extensions\DocumentDB\DocumentDBContextTests.cs" />
-    <Compile Include="Extensions\DocumentDB\DocumentDBItemBindingTests.cs" />
-    <Compile Include="Extensions\DocumentDB\DocumentDBOutputBindingProviderTests.cs" />
-    <Compile Include="Extensions\DocumentDB\DocumentDBItemValueBinderTests.cs" />
     <Compile Include="Extensions\DocumentDB\TestDocumentDBServiceFactory.cs" />
     <Compile Include="Extensions\MobileApps\MobileTableAsyncCollectorTests.cs" />
     <Compile Include="Extensions\MobileApps\MobileTableAttributeBindingProviderTests.cs" />

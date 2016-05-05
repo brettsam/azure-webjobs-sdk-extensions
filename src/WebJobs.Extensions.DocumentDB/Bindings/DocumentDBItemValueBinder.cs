@@ -15,22 +15,18 @@ using Newtonsoft.Json.Linq;
 namespace Microsoft.Azure.WebJobs.Extensions.DocumentDB
 {
     internal class DocumentDBItemValueBinder<T> : IValueBinder where T : class
-    {
-        private ParameterInfo _parameter;
+    {        
         private DocumentDBContext _context;
         private JObject _originalItem;
-        private DocumentDBItemBindingContext _itemBindingContext;
 
-        public DocumentDBItemValueBinder(ParameterInfo parameter, DocumentDBContext context, DocumentDBItemBindingContext itemBindingContext)
+        public DocumentDBItemValueBinder(DocumentDBContext context)
         {
-            _itemBindingContext = itemBindingContext;
-            _parameter = parameter;
-            _context = context;
+            _context = context;            
         }
 
         public Type Type
         {
-            get { return _parameter.ParameterType; }
+            get { return typeof(T); }
         }
 
         public async Task SetValueAsync(object value, CancellationToken cancellationToken)
@@ -45,14 +41,14 @@ namespace Microsoft.Azure.WebJobs.Extensions.DocumentDB
 
         public object GetValue()
         {
-            Uri documentUri = UriFactory.CreateDocumentUri(_context.ResolvedDatabaseName, _context.ResolvedCollectionName, _itemBindingContext.Id);
+            Uri documentUri = UriFactory.CreateDocumentUri(_context.ResolvedDatabaseName, _context.ResolvedCollectionName, _context.ResolvedId);
             RequestOptions options = null;
 
-            if (!string.IsNullOrEmpty(_itemBindingContext.PartitionKey))
+            if (!string.IsNullOrEmpty(_context.ResolvedPartitionKey))
             {
                 options = new RequestOptions
                 {
-                    PartitionKey = new PartitionKey(_itemBindingContext.PartitionKey)
+                    PartitionKey = new PartitionKey(_context.ResolvedPartitionKey)
                 };
             }
 

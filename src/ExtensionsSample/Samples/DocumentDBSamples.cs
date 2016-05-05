@@ -3,10 +3,7 @@
 
 using System;
 using ExtensionsSample.Models;
-using Microsoft.Azure.Documents;
-using Microsoft.Azure.Documents.Client;
 using Microsoft.Azure.WebJobs;
-using Microsoft.Azure.WebJobs.Host;
 using Newtonsoft.Json.Linq;
 
 namespace ExtensionsSample.Samples
@@ -26,16 +23,15 @@ namespace ExtensionsSample.Samples
         //   out T[]
         //   IAsyncCollector<T>
         //   ICollector<T>
-        //[Disable]
-        //public static void InsertDocument(
-        //    [TimerTrigger("00:01")] TimerInfo timer,
-        //    [DocumentDB("ItemDb", "ItemCollection")] out ItemDoc newItem)
-        //{
-        //    newItem = new ItemDoc()
-        //    {
-        //        Text = new Random().Next().ToString()
-        //    };
-        //}
+        public static void InsertDocument(
+            [TimerTrigger("00:01")] TimerInfo timer,
+            [DocumentDB("ItemDb", "ItemCollection", CreateIfNotExists = true)] out ItemDoc newItem)
+         I l{
+            newItem = new ItemDoc()
+            {
+                Text = new Random().Next().ToString()
+            };
+        }
 
         // Document input binding
         //   This binding requires the 'Id' property to be specified. The binding uses
@@ -47,27 +43,30 @@ namespace ExtensionsSample.Samples
         // This example uses the binding template "{QueueTrigger}" to specify that the Id should come from
         // the string value of the queued item.
         //[Disable]
-        //public static void ReadDocument(
-        //    [QueueTrigger("samples-documentdb-csharp")] string input,
-        //    [DocumentDB("ItemDb", "ItemCollection", Id = "{QueueTrigger}")] JObject item)
-        //{
-        //    item["text"] = "Text changed!";
-        //}
+        public static void ReadDocument(
+             [QueueTrigger("documentdb-input")] string details,
+            [DocumentDB("ItemDb", "ItemCollection", Id = "{QueueTrigger}")] JObject item)
+        {
+            if (item != null)
+            {
+                item["text"] = "Text changed!";
+            }
+        }
 
         // DocumentClient input binding
         //   The binding supplies a DocumentClient directly.
-        public static void DocumentClient(
-            [TimerTrigger("00:01", RunOnStartup = true)] TimerInfo timer,
-            [DocumentDB] DocumentClient client,
-            TraceWriter log)
-        {
-            var collectionUri = UriFactory.CreateDocumentCollectionUri("ItemDb", "ItemCollection");
-            var documents = client.CreateDocumentQuery(collectionUri);
+        //public static void DocumentClient(
+        //    [TimerTrigger("00:01", RunOnStartup = true)] TimerInfo timer,
+        //    [DocumentDB] DocumentClient client,
+        //    TraceWriter log)
+        //{
+        //    var collectionUri = UriFactory.CreateDocumentCollectionUri("ItemDb", "ItemCollection");
+        //    var documents = client.CreateDocumentQuery(collectionUri);
 
-            foreach (Document d in documents)
-            {
-                log.Info(d.Id);
-            }
-        }
+        //    foreach (Document d in documents)
+        //    {
+        //        log.Info(d.Id);
+        //    }
+        //}
     }
 }

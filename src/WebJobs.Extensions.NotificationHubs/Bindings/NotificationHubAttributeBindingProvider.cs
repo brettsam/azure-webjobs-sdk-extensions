@@ -59,14 +59,15 @@ namespace Microsoft.Azure.WebJobs.Extensions.NotificationHubs
 
             Func<string, INotificationHubClientService> invokeStringBinder = (invokeString) => service;
 
-            IBinding binding = BindingFactory.BindCollector(
-                parameter,
-                _converterManager,
-                (nhClientService, valueBindingContext) => new NotificationHubAsyncCollector(service, attribute.TagExpression),
-                "NotificationHubs",
-                invokeStringBinder);
+            //IBinding binding = BindingFactory.BindCollector(
+            //    parameter,
+            //    _converterManager,
+            //    (nhClientService, valueBindingContext) => new NotificationHubAsyncCollector(service, attribute.TagExpression),
+            //    "NotificationHubs",
+            //    invokeStringBinder);
 
-            return Task.FromResult(binding);
+            //return Task.FromResult(binding);
+            return null;
         }
 
         /// <summary>

@@ -71,9 +71,9 @@ namespace Microsoft.Azure.WebJobs.Extensions.MobileApps
         {
             Type coreType = TypeUtility.GetCoreType(parameter.ParameterType);
 
-            IBinding genericBinding = BindingFactory.BindGenericCollector(parameter, typeof(MobileTableAsyncCollector<>), coreType,
-                _jobHostConfig.GetService<IConverterManager>(), (s) => _mobileTableContext);
-            return Task.FromResult(genericBinding);
+            //IBinding genericBinding = BindingFactory.BindGenericCollector(parameter, typeof(MobileTableAsyncCollector<>), coreType,
+            //    _jobHostConfig.GetService<IConverterManager>(), (s) => _mobileTableContext);
+            return null;
         }
     }
 }

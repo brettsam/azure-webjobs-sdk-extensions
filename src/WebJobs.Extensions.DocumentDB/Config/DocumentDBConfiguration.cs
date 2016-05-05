@@ -3,6 +3,7 @@
 
 using System;
 using System.Configuration;
+using System.Threading.Tasks;
 using Microsoft.Azure.Documents.Client;
 using Microsoft.Azure.WebJobs.Host;
 using Microsoft.Azure.WebJobs.Host.Bindings;
@@ -44,11 +45,47 @@ namespace Microsoft.Azure.WebJobs.Extensions.DocumentDB
             var nameResolver = context.Config.GetService<INameResolver>();
             var cm = context.Config.GetService<IConverterManager>();
 
-            var bf = new BindingFactory2(nameResolver, cm);
-            var ruleClient = bf.BindToExactType<DocumentDBAttribute, DocumentClient>((attr) => this.DocumentDBServiceFactory.CreateService(this.ConnectionString).GetClient());
+            var bf = new BindingFactory(nameResolver, cm);
+            var outputRule = bf.BindToGenericAsyncCollector<DocumentDBAttribute, DocumentDBContext>(typeof(DocumentDBAsyncCollector<>), (attr) =>
+            {
+                return new DocumentDBContext
+                {
+                    Service = this.DocumentDBServiceFactory.CreateService(this.ConnectionString),
+                    CreateIfNotExists = attr.CreateIfNotExists,
+                    ResolvedCollectionName = attr.CollectionName,
+                    ResolvedDatabaseName = attr.DatabaseName,
+                    ResolvedId = attr.Id,
+                    ResolvedPartitionKey = attr.PartitionKey,
+                    CollectionThroughput = attr.CollectionThroughput,
+                    MaxThrottleRetries = 10,
+                    Trace = context.Trace
+                };
+            });
+
+            var clientRule = bf.BindToExactType<DocumentDBAttribute, DocumentClient>((attr) => this.DocumentDBServiceFactory.CreateService(this.ConnectionString).GetClient());
+            var itemRule = bf.BindToGenericItem<DocumentDBAttribute>((attr, t) =>
+            {
+                DocumentDBContext documentDBContext = new DocumentDBContext
+                {
+                    Service = this.DocumentDBServiceFactory.CreateService(this.ConnectionString),
+                    CreateIfNotExists = attr.CreateIfNotExists,
+                    ResolvedCollectionName = attr.CollectionName,
+                    ResolvedDatabaseName = attr.DatabaseName,
+                    ResolvedId = attr.Id,
+                    ResolvedPartitionKey = attr.PartitionKey,
+                    CollectionThroughput = attr.CollectionThroughput,
+                    MaxThrottleRetries = 10,
+                    Trace = context.Trace
+                };
+
+                Type genericType = typeof(DocumentDBItemValueBinder<>).MakeGenericType(t);
+                var binder = (IValueBinder)Activator.CreateInstance(genericType, documentDBContext);
+
+                return Task.FromResult(binder);
+            });
 
             IExtensionRegistry extensions = context.Config.GetService<IExtensionRegistry>();
-            extensions.RegisterBindingRules<DocumentDBAttribute>(ruleClient);
+            extensions.RegisterBindingRules<DocumentDBAttribute>(outputRule, clientRule, itemRule);
         }
 
         internal static string GetSettingFromConfigOrEnvironment(string key)
