@@ -13,7 +13,7 @@ namespace Microsoft.Azure.WebJobs.Extensions.NotificationHubs
         {
             converterManager.AddConverter<TemplateNotification, Notification>(templateNotification => templateNotification);
             converterManager.AddConverter<string, Notification>(messageProperties => BuildTemplateNotificationFromJsonString(messageProperties));
-            converterManager.AddConverter<IDictionary<string, string>, Notification>(messageProperties => BuildTemplateNotificationFromDictionary(messageProperties));
+            converterManager.AddConverter<string, Notification, NotificationHubAttribute>((notificationAsString, notificationHubAttr) => BuildNotificationFromString(notificationAsString, notificationHubAttr.Platform));
             return converterManager;
         }
 
@@ -27,6 +27,40 @@ namespace Microsoft.Azure.WebJobs.Extensions.NotificationHubs
         internal static TemplateNotification BuildTemplateNotificationFromDictionary(IDictionary<string, string> templateProperties)
         {
             return new TemplateNotification(templateProperties);
+        }
+
+        internal static Notification BuildNotificationFromString(string notificationAsString, NotificationPlatform platform)
+        {
+            Notification notification = null;
+            if (platform == 0)
+            {
+                JObject jobj = JObject.Parse(notificationAsString);
+                Dictionary<string, string> templateProperties = jobj.ToObject<Dictionary<string, string>>();
+                notification = new TemplateNotification(templateProperties);
+            }
+            else
+            {
+                switch (platform)
+                {
+                    case NotificationPlatform.Wns:
+                        notification = new WindowsNotification(notificationAsString);
+                        break;
+                    case NotificationPlatform.Apns:
+                        notification = new AppleNotification(notificationAsString);
+                        break;
+                    case NotificationPlatform.Gcm:
+                        notification = new GcmNotification(notificationAsString);
+                        break;
+                    case NotificationPlatform.Adm:
+                        notification = new AdmNotification(notificationAsString);
+                        break;
+                    case NotificationPlatform.Mpns:
+                        notification = new MpnsNotification(notificationAsString);
+                        break;
+                }
+            }
+
+            return notification;
         }
     }
 }

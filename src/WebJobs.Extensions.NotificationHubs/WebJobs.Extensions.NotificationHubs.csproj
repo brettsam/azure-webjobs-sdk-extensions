@@ -41,7 +41,6 @@
   </PropertyGroup>
   <ItemGroup>
     <Compile Include="Bindings\NotificationHubAsyncCollector.cs" />
-    <Compile Include="Bindings\NotificationHubAttributeBindingProvider.cs" />
     <Compile Include="Config\Converter.cs" />
     <Compile Include="Config\NotificationHubsConfiguration.cs" />
     <Compile Include="Config\NotificationHubJobHostConfigurationExtensions.cs" />

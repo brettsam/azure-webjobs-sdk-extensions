@@ -51,7 +51,7 @@
       <Private>True</Private>
     </Reference>
     <Reference Include="Microsoft.Azure.NotificationHubs, Version=2.16.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
-      <HintPath>..\..\packages\Microsoft.Azure.NotificationHubs.1.0.3\lib\net45-full\Microsoft.Azure.NotificationHubs.dll</HintPath>
+      <HintPath>..\..\packages\Microsoft.Azure.NotificationHubs.1.0.5\lib\net45-full\Microsoft.Azure.NotificationHubs.dll</HintPath>
       <Private>True</Private>
     </Reference>
     <Reference Include="Microsoft.Azure.WebJobs, Version=2.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
@@ -212,7 +212,6 @@
     <Compile Include="Extensions\Files\Listener\FileProcessorTests.cs" />
     <Compile Include="Extensions\NotificationHubs\ConverterTests.cs" />
     <Compile Include="Extensions\NotificationHubs\NotificationHubAsyncCollectorTests.cs" />
-    <Compile Include="Extensions\NotificationHubs\NotificationHubAttributeBindingProviderTests.cs" />
     <Compile Include="Extensions\Timers\Bindings\TimerTriggerBindingTests.cs" />
     <Compile Include="Extensions\Timers\Scheduling\StorageScheduleMonitorTests.cs" />
     <Compile Include="Extensions\Timers\Scheduling\TimerScheduleTests.cs" />
