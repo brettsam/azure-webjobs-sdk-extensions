@@ -115,6 +115,7 @@
       <SubType>Designer</SubType>
     </CodeAnalysisDictionary>
     <Compile Include="Bindings\MobileTableAsyncCollector.cs" />
+    <Compile Include="Bindings\OutputBinding.cs" />
     <Compile Include="Config\DefaultMobileServiceClientFactory.cs" />
     <Compile Include="Config\IMobileServiceClientFactory.cs" />
     <Compile Include="Config\MobileServiceApiKeyHandler.cs" />
