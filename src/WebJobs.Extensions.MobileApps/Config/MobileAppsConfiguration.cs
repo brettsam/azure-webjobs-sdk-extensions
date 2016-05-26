@@ -6,7 +6,6 @@ using System.Collections.Concurrent;
 using System.Configuration;
 using System.Linq;
 using System.Net.Http;
-using System.Threading.Tasks;
 using Microsoft.Azure.WebJobs.Extensions.MobileApps.Rules;
 using Microsoft.Azure.WebJobs.Extensions.Rules;
 using Microsoft.Azure.WebJobs.Host;
@@ -77,7 +76,7 @@ namespace Microsoft.Azure.WebJobs.Extensions.MobileApps
             IBindingRule<MobileTableAttribute> jObjectTableRule = new ExactTableRule(this);
             IBindingRule<MobileTableAttribute> tableRule = new TableRule(this);
             IBindingRule<MobileTableAttribute> queryRule = new QueryRule(this);
-            IBindingRule<MobileTableAttribute> itemRule = new GenericBindingRule<MobileTableAttribute>(typeof(ItemRule<>), this);
+            IBindingRule<MobileTableAttribute> itemRule = new ItemRule(this);
 
             extensions.RegisterBindingRules(nameResolver, clientRule, jObjectTableRule, tableRule, queryRule, itemRule);
         }

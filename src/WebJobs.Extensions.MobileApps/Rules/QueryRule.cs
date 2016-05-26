@@ -2,7 +2,6 @@
 // Licensed under the MIT License. See License.txt in the project root for license information.
 
 using System;
-using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using System.Threading.Tasks;
@@ -17,7 +16,7 @@ namespace Microsoft.Azure.WebJobs.Extensions.MobileApps.Rules
         }
 
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Design", "CA1062:Validate arguments of public methods", MessageId = "1")]
-        public override bool CanBind(MobileTableAttribute attribute, Type parameterType)
+        protected override bool CanBind(MobileTableAttribute attribute, Type parameterType)
         {
             if (parameterType.IsGenericType &&
                 parameterType.GetGenericTypeDefinition() == typeof(IMobileServiceTableQuery<>))
@@ -31,9 +30,9 @@ namespace Microsoft.Azure.WebJobs.Extensions.MobileApps.Rules
             return false;
         }
 
-        public override async Task<object> OnFunctionExecutingAsync(MobileTableAttribute attribute, Type parameterType, IDictionary<string, object> invocationState)
+        public override async Task<object> OnFunctionExecutingAsync(MobileTableAttribute attribute, Type parameterType)
         {
-            object table = await base.OnFunctionExecutingAsync(attribute, parameterType, invocationState);
+            object table = await base.OnFunctionExecutingAsync(attribute, parameterType);
             MethodInfo createQueryMethod = table.GetType().GetMethod("CreateQuery");
 
             return createQueryMethod.Invoke(table, null);

@@ -145,11 +145,13 @@
     <Compile Include="Extensions\Timers\TimerTriggerAttribute.cs" />
     <Compile Include="Extensions\Timers\Bindings\TimerTriggerAttributeBindingProvider.cs" />
     <Compile Include="Rules\AttributeCloner.cs" />
-    <Compile Include="Rules\BindingRule.cs" />
     <Compile Include="Rules\DefaultAttributeInvokerDescriptor.cs" />
     <Compile Include="Rules\GenericBindingRule.cs" />
     <Compile Include="Rules\GenericCompositeBindingProvider.cs" />
     <Compile Include="Rules\IBindingRule.cs" />
+    <Compile Include="Rules\IBindingRuleBinder.cs" />
+    <Compile Include="Rules\InputBindingRule.cs" />
+    <Compile Include="Rules\InputBindingRuleBinder.cs" />
     <Compile Include="Rules\RegistryExtensions.cs" />
     <Compile Include="Rules\RuleBinding.cs" />
     <Compile Include="Rules\RuleBindingProvider.cs" />

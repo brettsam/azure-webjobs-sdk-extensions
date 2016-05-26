@@ -2,7 +2,6 @@
 // Licensed under the MIT License. See License.txt in the project root for license information.
 
 using System;
-using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using System.Threading.Tasks;
@@ -11,7 +10,7 @@ using Microsoft.WindowsAzure.MobileServices;
 
 namespace Microsoft.Azure.WebJobs.Extensions.MobileApps.Rules
 {
-    internal class TableRule : BindingRule<MobileTableAttribute>
+    internal class TableRule : InputBindingRule<MobileTableAttribute>
     {
         private MobileAppsConfiguration _config;
 
@@ -21,7 +20,7 @@ namespace Microsoft.Azure.WebJobs.Extensions.MobileApps.Rules
         }
 
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Design", "CA1062:Validate arguments of public methods", MessageId = "1")]
-        public override bool CanBind(MobileTableAttribute attribute, Type parameterType)
+        protected override bool CanBind(MobileTableAttribute attribute, Type parameterType)
         {
             // We will check if the argument is valid in a Validator
             if (parameterType.IsGenericType &&
@@ -37,7 +36,7 @@ namespace Microsoft.Azure.WebJobs.Extensions.MobileApps.Rules
         }
 
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Design", "CA1062:Validate arguments of public methods", MessageId = "1")]
-        public override Task<object> OnFunctionExecutingAsync(MobileTableAttribute attribute, Type parameterType, IDictionary<string, object> invocationState)
+        public override Task<object> OnFunctionExecutingAsync(MobileTableAttribute attribute, Type parameterType)
         {
             MobileTableContext context = _config.CreateContext(attribute);
 

@@ -6,8 +6,9 @@ using System.Threading.Tasks;
 
 namespace Microsoft.Azure.WebJobs.Extensions.Rules
 {
-    internal interface IBindingRule<TAttribute> where TAttribute : Attribute
+    internal interface IBindingRuleBinder<TAttribute> where TAttribute : Attribute
     {
-        Task<IBindingRuleBinder<TAttribute>> GetRuleBinderAsync(TAttribute attribute, Type parameterType);
+        Task<object> OnFunctionExecutingAsync(TAttribute attribute, Type parameterType);
+        Task OnFunctionExecutedAsync(TAttribute attribute, Type parameterType, object item);
     }
 }

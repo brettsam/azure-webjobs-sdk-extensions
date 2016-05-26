@@ -2,41 +2,31 @@
 // Licensed under the MIT License. See License.txt in the project root for license information.
 
 using System;
-using System.Collections.Generic;
 using System.Threading.Tasks;
 
 namespace Microsoft.Azure.WebJobs.Extensions.Rules
 {
-    internal class GenericBindingRule<TAttribute> : IBindingRule<TAttribute>
+    internal abstract class GenericBindingRule<TAttribute> : IBindingRule<TAttribute> where TAttribute : Attribute
     {
-        private Type _ruleType;
+        private Type _ruleBinderType;
         private object[] _constructorParams;
-        private IBindingRule<TAttribute> innerRule;
 
-        public GenericBindingRule(Type genericBindingRuleType, params object[] constructorParams)
+        public GenericBindingRule(Type genericBindingRuleBinderType, params object[] constructorParams)
         {
-            _ruleType = genericBindingRuleType;
+            _ruleBinderType = genericBindingRuleBinderType;
             _constructorParams = constructorParams;
 
             // TODO: Some checks that the Type is okay.
         }
 
-        public bool CanBind(TAttribute attribute, Type parameterType)
-        {
-            Type genericRuleType = _ruleType.MakeGenericType(parameterType);
-            innerRule = Activator.CreateInstance(genericRuleType, _constructorParams) as IBindingRule<TAttribute>;
+        public abstract bool CanBind(TAttribute attribute, Type parameterType);
 
-            return innerRule.CanBind(attribute, parameterType);
-        }
-
-        public Task<object> OnFunctionExecutingAsync(TAttribute attribute, Type parameterType, IDictionary<string, object> invocationState)
+        public Task<IBindingRuleBinder<TAttribute>> GetRuleBinderAsync(TAttribute attribute, Type parameterType)
         {
-            return innerRule.OnFunctionExecutingAsync(attribute, parameterType, invocationState);
-        }
+            Type genericRuleType = _ruleBinderType.MakeGenericType(parameterType);
+            IBindingRuleBinder<TAttribute> ruleBinder = Activator.CreateInstance(genericRuleType, _constructorParams) as IBindingRuleBinder<TAttribute>;
 
-        public Task OnFunctionExecutedAsync(TAttribute attribute, Type parameterType, object item, IDictionary<string, object> invocationState)
-        {
-            return innerRule.OnFunctionExecutedAsync(attribute, parameterType, item, invocationState);
+            return Task.FromResult(ruleBinder);
         }
     }
 }

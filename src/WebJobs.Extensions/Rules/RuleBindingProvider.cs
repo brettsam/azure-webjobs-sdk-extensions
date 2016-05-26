@@ -19,7 +19,7 @@ namespace Microsoft.Azure.WebJobs.Extensions.Rules
             _nameResolver = nameResolver;
         }
 
-        public Task<IBinding> TryCreateAsync(BindingProviderContext context)
+        public async Task<IBinding> TryCreateAsync(BindingProviderContext context)
         {
             if (context == null)
             {
@@ -32,7 +32,7 @@ namespace Microsoft.Azure.WebJobs.Extensions.Rules
             TAttribute attributeSource = parameter.GetCustomAttribute<TAttribute>(inherit: false);
             if (attributeSource == null)
             {
-                return Task.FromResult<IBinding>(null);
+                return null;
             }
 
             // resolve static %% variables that we know now
@@ -40,15 +40,15 @@ namespace Microsoft.Azure.WebJobs.Extensions.Rules
             var attrNameResolved = cloner.GetNameResolvedAttribute();
 
             // This may do validation and throw too. 
-            bool canBind = _rule.CanBind(attrNameResolved, parameter.ParameterType);
+            IBindingRuleBinder<TAttribute> binder = await _rule.GetRuleBinderAsync(attrNameResolved, parameter.ParameterType);
 
-            if (!canBind)
+            if (binder == null)
             {
-                return Task.FromResult<IBinding>(null);
+                return null;
             }
 
-            IBinding binding = new RuleBinding<TAttribute>(_rule, cloner, parameter.ParameterType);
-            return Task.FromResult(binding);
+            IBinding binding = new RuleBinding<TAttribute>(binder, cloner, parameter.ParameterType);
+            return binding;
         }
     }
 }
