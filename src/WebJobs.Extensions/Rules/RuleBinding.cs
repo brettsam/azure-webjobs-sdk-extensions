@@ -10,11 +10,11 @@ namespace Microsoft.Azure.WebJobs.Extensions.Rules
 {
     internal class RuleBinding<TAttribute> : IBinding where TAttribute : Attribute
     {
-        private IBindingRuleBinder<TAttribute> _binder;
+        private IBindingRule<TAttribute> _binder;
         private AttributeCloner<TAttribute> _cloner;
         private Type _parameterType;
 
-        public RuleBinding(IBindingRuleBinder<TAttribute> binder, AttributeCloner<TAttribute> cloner, Type parameterType)
+        public RuleBinding(IBindingRule<TAttribute> binder, AttributeCloner<TAttribute> cloner, Type parameterType)
         {
             _binder = binder;
             _cloner = cloner;

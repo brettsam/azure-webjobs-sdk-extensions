@@ -2,17 +2,38 @@
 // Licensed under the MIT License. See License.txt in the project root for license information.
 
 using System;
+using System.Collections.Generic;
 using System.Linq;
+using System.Reflection;
 using Microsoft.Azure.WebJobs.Host;
 using Microsoft.Azure.WebJobs.Host.Bindings;
 
 namespace Microsoft.Azure.WebJobs.Extensions.Rules
 {
-    internal static class RegistryExtensions
+    /// <summary>
+    /// </summary>
+    public static class RegistryExtensions
     {
-        public static void RegisterBindingRules<TAttribute>(this IExtensionRegistry registry, INameResolver resolver, params IBindingRule<TAttribute>[] rules) where TAttribute : Attribute
+        /// <summary>
+        /// </summary>
+        /// <typeparam name="TAttribute"></typeparam>
+        /// <param name="registry"></param>
+        /// <param name="config"></param>
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Design", "CA1004:GenericMethodsShouldProvideTypeParameter")]
+        public static void RegisterBindingRules<TAttribute>(this IExtensionRegistry registry, JobHostConfiguration config) where TAttribute : Attribute
         {
-            var providers = rules.Select(r => new RuleBindingProvider<TAttribute>(r, resolver));
+            List<Type> ruleTypes = Assembly.GetCallingAssembly().GetTypes()
+                .Where(t => t.GetInterfaces().Contains(typeof(IBindingRule<TAttribute>))).ToList();
+
+            Type lastRuleType = ruleTypes.Where(t => t.GetCustomAttribute<LastBindingRuleAttribute>() != null).SingleOrDefault();
+
+            if (lastRuleType != null)
+            {
+                ruleTypes.Remove(lastRuleType);
+                ruleTypes.Add(lastRuleType);
+            }
+
+            var providers = ruleTypes.Select(r => new RuleBindingProvider<TAttribute>(r, config));
             var all = new GenericCompositeBindingProvider<TAttribute>(providers);
             registry.RegisterExtension<IBindingProvider>(all);
         }

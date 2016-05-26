@@ -129,7 +129,6 @@
     <Compile Include="Rules\ClientRule.cs" />
     <Compile Include="Rules\ExactTableRule.cs" />
     <Compile Include="Rules\ItemRule.cs" />
-    <Compile Include="Rules\ItemRuleBinder.cs" />
     <Compile Include="Rules\QueryRule.cs" />
     <Compile Include="Rules\TableRule.cs" />
   </ItemGroup>

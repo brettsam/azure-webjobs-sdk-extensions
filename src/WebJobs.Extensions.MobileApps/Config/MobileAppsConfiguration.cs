@@ -6,10 +6,8 @@ using System.Collections.Concurrent;
 using System.Configuration;
 using System.Linq;
 using System.Net.Http;
-using Microsoft.Azure.WebJobs.Extensions.MobileApps.Rules;
 using Microsoft.Azure.WebJobs.Extensions.Rules;
 using Microsoft.Azure.WebJobs.Host;
-using Microsoft.Azure.WebJobs.Host.Bindings;
 using Microsoft.Azure.WebJobs.Host.Config;
 using Microsoft.WindowsAzure.MobileServices;
 
@@ -64,21 +62,10 @@ namespace Microsoft.Azure.WebJobs.Extensions.MobileApps
                 throw new ArgumentNullException("context");
             }
 
-            INameResolver nameResolver = context.Config.GetService<INameResolver>();
+            context.Config.AddService(this);
 
-            IConverterManager converterManager = context.Config.GetService<IConverterManager>();
-            BindingFactory factory = new BindingFactory(nameResolver, converterManager);
-            IBindingProvider outputProvider = factory.BindToGenericAsyncCollector<MobileTableAttribute>(BindForOutput, ThrowIfInvalidOutputItemType);
             IExtensionRegistry extensions = context.Config.GetService<IExtensionRegistry>();
-            //extensions.RegisterBindingRules<MobileTableAttribute>(ValidateMobileAppUri, nameResolver, outputProvider, itemProvider);
-
-            IBindingRule<MobileTableAttribute> clientRule = new ClientRule(this);
-            IBindingRule<MobileTableAttribute> jObjectTableRule = new ExactTableRule(this);
-            IBindingRule<MobileTableAttribute> tableRule = new TableRule(this);
-            IBindingRule<MobileTableAttribute> queryRule = new QueryRule(this);
-            IBindingRule<MobileTableAttribute> itemRule = new ItemRule(this);
-
-            extensions.RegisterBindingRules(nameResolver, clientRule, jObjectTableRule, tableRule, queryRule, itemRule);
+            extensions.RegisterBindingRules<MobileTableAttribute>(context.Config);
         }
 
         internal static void ThrowIfGenericArgumentIsInvalid(MobileTableAttribute attribute, Type paramType)

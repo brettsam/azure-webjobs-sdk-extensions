@@ -2,6 +2,7 @@
 // Licensed under the MIT License. See License.txt in the project root for license information.
 
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using System.Threading.Tasks;
@@ -10,7 +11,7 @@ using Microsoft.WindowsAzure.MobileServices;
 
 namespace Microsoft.Azure.WebJobs.Extensions.MobileApps.Rules
 {
-    internal class TableRule : InputBindingRule<MobileTableAttribute>
+    internal class TableRule : IBindingRule<MobileTableAttribute>
     {
         private MobileAppsConfiguration _config;
 
@@ -20,7 +21,7 @@ namespace Microsoft.Azure.WebJobs.Extensions.MobileApps.Rules
         }
 
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Design", "CA1062:Validate arguments of public methods", MessageId = "1")]
-        protected override bool CanBind(MobileTableAttribute attribute, Type parameterType)
+        public virtual bool CanBind(MobileTableAttribute attribute, Type parameterType)
         {
             // We will check if the argument is valid in a Validator
             if (parameterType.IsGenericType &&
@@ -35,8 +36,13 @@ namespace Microsoft.Azure.WebJobs.Extensions.MobileApps.Rules
             return false;
         }
 
+        public Task OnFunctionExecutedAsync(MobileTableAttribute attribute, Type parameterType, object item, IDictionary<string, object> invocationState)
+        {
+            return Task.FromResult(0);
+        }
+
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Design", "CA1062:Validate arguments of public methods", MessageId = "1")]
-        public override Task<object> OnFunctionExecutingAsync(MobileTableAttribute attribute, Type parameterType)
+        public virtual Task<object> OnFunctionExecutingAsync(MobileTableAttribute attribute, Type parameterType, IDictionary<string, object> invocationState)
         {
             MobileTableContext context = _config.CreateContext(attribute);
 
@@ -50,16 +56,11 @@ namespace Microsoft.Azure.WebJobs.Extensions.MobileApps.Rules
                 context.Client.AddToTableNameCache(tableType, context.ResolvedAttribute.TableName);
             }
 
-            MethodInfo getTableMethod = GetGenericTableMethod();
+            MethodInfo getTableMethod = typeof(IMobileServiceClient).GetMethods()
+                .Where(m => m.IsGenericMethod && m.Name == "GetTable").Single();
             MethodInfo getTableGenericMethod = getTableMethod.MakeGenericMethod(tableType);
 
             return Task.FromResult(getTableGenericMethod.Invoke(context.Client, null));
-        }
-
-        private static MethodInfo GetGenericTableMethod()
-        {
-            return typeof(IMobileServiceClient).GetMethods()
-                .Where(m => m.IsGenericMethod && m.Name == "GetTable").Single();
         }
     }
 }
