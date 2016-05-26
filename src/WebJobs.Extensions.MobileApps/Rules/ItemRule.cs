@@ -2,91 +2,91 @@
 // Licensed under the MIT License. See License.txt in the project root for license information.
 
 using System;
-using System.Threading;
+using System.Collections.Generic;
+using System.Globalization;
 using System.Threading.Tasks;
-using Microsoft.Azure.WebJobs.Host.Bindings;
+using Microsoft.Azure.WebJobs.Extensions.Rules;
 using Microsoft.WindowsAzure.MobileServices;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 
-namespace Microsoft.Azure.WebJobs.Extensions.MobileApps
+namespace Microsoft.Azure.WebJobs.Extensions.MobileApps.Rules
 {
-    internal class MobileTableItemValueBinder<T> : IValueBinder
+    internal class ItemRule<T> : IBindingRule<MobileTableAttribute>
     {
-        private MobileTableContext _context;
-        private JObject _originalItem;
+        private MobileAppsConfiguration _config;
+        private const string StateKey = "OriginalItem";
 
-        public MobileTableItemValueBinder(MobileTableContext context)
+        public ItemRule(MobileAppsConfiguration config)
         {
-            _context = context;
+            _config = config;
         }
 
-        public Type Type
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Design", "CA1062:Validate arguments of public methods", MessageId = "1")]
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Design", "CA1062:Validate arguments of public methods", MessageId = "0")]
+        public bool CanBind(MobileTableAttribute attribute, Type parameterType)
         {
-            get { return typeof(T); }
-        }
+            // this is the final rule, so if the type is okay, return true
+            MobileAppUtility.ThrowIfInvalidItemType(attribute, parameterType);
 
-        public async Task SetValueAsync(object value, CancellationToken cancellationToken)
-        {
-            if (value == null || _originalItem == null)
+            if (string.IsNullOrEmpty(attribute.Id))
             {
-                return;
+                throw new InvalidOperationException(string.Format(CultureInfo.CurrentCulture, "'Id' must be set when using a parameter of type '{0}'.", parameterType.Name));
             }
 
-            await SetValueInternalAsync(_originalItem, value, _context);
+            return true;
         }
 
-        public object GetValue()
+        public async Task<object> OnFunctionExecutingAsync(MobileTableAttribute attribute, Type parameterType, IDictionary<string, object> invocationState)
         {
             object item = null;
+            MobileTableContext context = _config.CreateContext(attribute);
 
             if (typeof(T) == typeof(JObject))
             {
-                IMobileServiceTable table = _context.Client.GetTable(_context.ResolvedAttribute.TableName);
-                IgnoreNotFoundException(() =>
+                IMobileServiceTable table = context.Client.GetTable(context.ResolvedAttribute.TableName);
+                await IgnoreNotFoundExceptionAsync(async () =>
                 {
-                    item = table.LookupAsync(_context.ResolvedAttribute.Id).Result;
-                    _originalItem = CloneItem(item);
+                    item = await table.LookupAsync(context.ResolvedAttribute.Id);
+                    invocationState[StateKey] = CloneItem(item);
                 });
             }
             else
             {
                 // If TableName is specified, add it to the internal table cache. Now items of this type
                 // will operate on the specified TableName.
-                if (!string.IsNullOrEmpty(_context.ResolvedAttribute.TableName))
+                if (!string.IsNullOrEmpty(context.ResolvedAttribute.TableName))
                 {
-                    _context.Client.AddToTableNameCache(typeof(T), _context.ResolvedAttribute.TableName);
+                    context.Client.AddToTableNameCache(typeof(T), context.ResolvedAttribute.TableName);
                 }
 
-                IMobileServiceTable<T> table = _context.Client.GetTable<T>();
-                IgnoreNotFoundException(() =>
+                IMobileServiceTable<T> table = context.Client.GetTable<T>();
+                await IgnoreNotFoundExceptionAsync(async () =>
                 {
-                    item = table.LookupAsync(_context.ResolvedAttribute.Id).Result;
-                    _originalItem = CloneItem(item);
+                    item = await table.LookupAsync(context.ResolvedAttribute.Id);
+                    invocationState[StateKey] = CloneItem(item);
                 });
             }
 
             return item;
         }
 
-        public string ToInvokeString()
-        {
-            return string.Empty;
-        }
-
-        internal static async Task SetValueInternalAsync(JObject originalItem, object newItem, MobileTableContext context)
+        public async Task OnFunctionExecutedAsync(MobileTableAttribute attribute, Type parameterType, object item, IDictionary<string, object> invocationState)
         {
             JObject currentValue = null;
-            bool isJObject = newItem.GetType() == typeof(JObject);
+            bool isJObject = item.GetType() == typeof(JObject);
 
             if (isJObject)
             {
-                currentValue = newItem as JObject;
+                currentValue = item as JObject;
             }
             else
             {
-                currentValue = JObject.FromObject(newItem);
+                currentValue = JObject.FromObject(item);
             }
+
+            JObject originalItem = invocationState[StateKey] as JObject;
+            MobileTableContext context = _config.CreateContext(attribute);
 
             if (HasChanged(originalItem, currentValue))
             {
@@ -99,7 +99,7 @@ namespace Microsoft.Azure.WebJobs.Extensions.MobileApps
                 if (isJObject)
                 {
                     IMobileServiceTable table = context.Client.GetTable(context.ResolvedAttribute.TableName);
-                    await table.UpdateAsync((JObject)newItem);
+                    await table.UpdateAsync((JObject)item);
                 }
                 else
                 {
@@ -107,10 +107,10 @@ namespace Microsoft.Azure.WebJobs.Extensions.MobileApps
                     // will operate on the specified TableName.
                     if (!string.IsNullOrEmpty(context.ResolvedAttribute.TableName))
                     {
-                        context.Client.AddToTableNameCache(newItem.GetType(), context.ResolvedAttribute.TableName);
+                        context.Client.AddToTableNameCache(item.GetType(), context.ResolvedAttribute.TableName);
                     }
                     IMobileServiceTable<T> table = context.Client.GetTable<T>();
-                    await table.UpdateAsync((T)newItem);
+                    await table.UpdateAsync((T)item);
                 }
             }
         }
@@ -132,11 +132,11 @@ namespace Microsoft.Azure.WebJobs.Extensions.MobileApps
             return JObject.Parse(serializedItem);
         }
 
-        private static void IgnoreNotFoundException(Action action)
+        private static async Task IgnoreNotFoundExceptionAsync(Func<Task> action)
         {
             try
             {
-                action();
+                await action();
             }
             catch (AggregateException ex)
             {

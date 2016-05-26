@@ -4,11 +4,11 @@
 using System;
 using System.Collections.Concurrent;
 using System.Configuration;
-using System.Globalization;
 using System.Linq;
 using System.Net.Http;
-using System.Reflection;
 using System.Threading.Tasks;
+using Microsoft.Azure.WebJobs.Extensions.MobileApps.Rules;
+using Microsoft.Azure.WebJobs.Extensions.Rules;
 using Microsoft.Azure.WebJobs.Host;
 using Microsoft.Azure.WebJobs.Host.Bindings;
 using Microsoft.Azure.WebJobs.Host.Config;
@@ -56,6 +56,8 @@ namespace Microsoft.Azure.WebJobs.Extensions.MobileApps
         internal IMobileServiceClientFactory ClientFactory { get; set; }
 
         /// <inheritdoc />
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Performance", "CA1804:RemoveUnusedLocals", MessageId = "itemProvider")]
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Performance", "CA1804:RemoveUnusedLocals", MessageId = "outputProvider")]
         public void Initialize(ExtensionConfigContext context)
         {
             if (context == null)
@@ -64,75 +66,27 @@ namespace Microsoft.Azure.WebJobs.Extensions.MobileApps
             }
 
             INameResolver nameResolver = context.Config.GetService<INameResolver>();
+
             IConverterManager converterManager = context.Config.GetService<IConverterManager>();
-
             BindingFactory factory = new BindingFactory(nameResolver, converterManager);
-
             IBindingProvider outputProvider = factory.BindToGenericAsyncCollector<MobileTableAttribute>(BindForOutput, ThrowIfInvalidOutputItemType);
-
-            IBindingProvider clientProvider = factory.BindToExactType<MobileTableAttribute, IMobileServiceClient>(BindForClient);
-
-            IBindingProvider queryProvider = factory.BindToGenericItem<MobileTableAttribute>(BindForQueryAsync);
-            queryProvider = factory.AddFilter<MobileTableAttribute>(IsQueryType, queryProvider);
-
-            IBindingProvider jObjectTableProvider = factory.BindToExactType<MobileTableAttribute, IMobileServiceTable>(BindForTable);
-
-            IBindingProvider tableProvider = factory.BindToGenericItem<MobileTableAttribute>(BindForTableAsync);
-            tableProvider = factory.AddFilter<MobileTableAttribute>(IsTableType, tableProvider);
-
-            IBindingProvider itemProvider = factory.BindToGenericValueProvider<MobileTableAttribute>(BindForItemAsync);
-            itemProvider = factory.AddFilter<MobileTableAttribute>(IsItemType, itemProvider);
-
             IExtensionRegistry extensions = context.Config.GetService<IExtensionRegistry>();
-            extensions.RegisterBindingRules<MobileTableAttribute>(ValidateMobileAppUri, nameResolver, outputProvider, clientProvider, jObjectTableProvider, queryProvider, tableProvider, itemProvider);
-        }
+            //extensions.RegisterBindingRules<MobileTableAttribute>(ValidateMobileAppUri, nameResolver, outputProvider, itemProvider);
 
-        internal static bool IsQueryType(MobileTableAttribute attribute, Type paramType)
-        {
-            if (paramType.IsGenericType &&
-                paramType.GetGenericTypeDefinition() == typeof(IMobileServiceTableQuery<>))
-            {
-                Type tableType = paramType.GetGenericArguments().Single();
-                ThrowIfInvalidItemType(attribute, tableType);
+            IBindingRule<MobileTableAttribute> clientRule = new ClientRule(this);
+            IBindingRule<MobileTableAttribute> jObjectTableRule = new ExactTableRule(this);
+            IBindingRule<MobileTableAttribute> tableRule = new TableRule(this);
+            IBindingRule<MobileTableAttribute> queryRule = new QueryRule(this);
+            IBindingRule<MobileTableAttribute> itemRule = new GenericBindingRule<MobileTableAttribute>(typeof(ItemRule<>), this);
 
-                return true;
-            }
-
-            return false;
-        }
-
-        internal bool IsTableType(MobileTableAttribute attribute, Type paramType)
-        {
-            // We will check if the argument is valid in a Validator
-            if (paramType.IsGenericType &&
-                paramType.GetGenericTypeDefinition() == typeof(IMobileServiceTable<>))
-            {
-                Type tableType = paramType.GetGenericArguments().Single();
-                ThrowIfInvalidItemType(attribute, tableType);
-
-                return true;
-            }
-
-            return false;
-        }
-
-        internal bool IsItemType(MobileTableAttribute attribute, Type paramType)
-        {
-            ThrowIfInvalidItemType(attribute, paramType);
-
-            if (string.IsNullOrEmpty(attribute.Id))
-            {
-                throw new InvalidOperationException(string.Format(CultureInfo.CurrentCulture, "'Id' must be set when using a parameter of type '{0}'.", paramType.Name));
-            }
-
-            return true;
+            extensions.RegisterBindingRules(nameResolver, clientRule, jObjectTableRule, tableRule, queryRule, itemRule);
         }
 
         internal static void ThrowIfGenericArgumentIsInvalid(MobileTableAttribute attribute, Type paramType)
         {
             // Assume IsQueryType or IsTableType has already run -- so we know there is only one argument
             Type argumentType = paramType.GetGenericArguments().Single();
-            ThrowIfInvalidItemType(attribute, argumentType);
+            MobileAppUtility.ThrowIfInvalidItemType(attribute, argumentType);
         }
 
         internal static bool ThrowIfInvalidOutputItemType(MobileTableAttribute attribute, Type paramType)
@@ -148,85 +102,7 @@ namespace Microsoft.Azure.WebJobs.Extensions.MobileApps
                 return true;
             }
 
-            return ThrowIfInvalidItemType(attribute, paramType);
-        }
-
-        internal static bool ThrowIfInvalidItemType(MobileTableAttribute attribute, Type paramType)
-        {
-            if (!MobileAppUtility.IsValidItemType(paramType, attribute.TableName))
-            {
-                throw new ArgumentException(string.Format("The type '{0}' cannot be used in a MobileTable binding. The type must either be 'JObject' or have a public string 'Id' property.", paramType.Name));
-            }
-
-            return true;
-        }
-
-        internal void ValidateMobileAppUri(MobileTableAttribute attribute, Type paramType)
-        {
-            if (MobileAppUri == null &&
-                string.IsNullOrEmpty(attribute.MobileAppUri))
-            {
-                throw new InvalidOperationException(
-                    string.Format(CultureInfo.CurrentCulture,
-                    "The mobile app Uri must be set either via a '{0}' app setting, via the MobileTableAttribute.MobileAppUri property or via MobileAppsConfiguration.MobileAppUri.",
-                    AzureWebJobsMobileAppUriName));
-            }
-        }
-
-        internal Task<IValueBinder> BindForItemAsync(MobileTableAttribute attribute, Type paramType)
-        {
-            MobileTableContext context = CreateContext(attribute);
-
-            Type genericType = typeof(MobileTableItemValueBinder<>).MakeGenericType(paramType);
-            IValueBinder binder = (IValueBinder)Activator.CreateInstance(genericType, context);
-
-            return Task.FromResult(binder);
-        }
-
-        internal IMobileServiceTable BindForTable(MobileTableAttribute attribute)
-        {
-            MobileTableContext context = CreateContext(attribute);
-            return context.Client.GetTable(context.ResolvedAttribute.TableName);
-        }
-
-        internal async Task<object> BindForQueryAsync(MobileTableAttribute attribute, Type paramType)
-        {
-            object table = await BindForTableAsync(attribute, paramType);
-            MethodInfo createQueryMethod = table.GetType().GetMethod("CreateQuery");
-
-            return createQueryMethod.Invoke(table, null);
-        }
-
-        internal Task<object> BindForTableAsync(MobileTableAttribute attribute, Type paramType)
-        {
-            MobileTableContext context = CreateContext(attribute);
-
-            // Assume that the Filter has already run.
-            Type tableType = paramType.GetGenericArguments().Single();
-
-            // If TableName is specified, add it to the internal table cache. Now items of this type
-            // will operate on the specified TableName.
-            if (!string.IsNullOrEmpty(context.ResolvedAttribute.TableName))
-            {
-                context.Client.AddToTableNameCache(tableType, context.ResolvedAttribute.TableName);
-            }
-
-            MethodInfo getTableMethod = GetGenericTableMethod();
-            MethodInfo getTableGenericMethod = getTableMethod.MakeGenericMethod(tableType);
-
-            return Task.FromResult(getTableGenericMethod.Invoke(context.Client, null));
-        }
-
-        private static MethodInfo GetGenericTableMethod()
-        {
-            return typeof(IMobileServiceClient).GetMethods()
-                .Where(m => m.IsGenericMethod && m.Name == "GetTable").Single();
-        }
-
-        internal IMobileServiceClient BindForClient(MobileTableAttribute attribute)
-        {
-            MobileTableContext context = CreateContext(attribute);
-            return context.Client;
+            return MobileAppUtility.ThrowIfInvalidItemType(attribute, paramType);
         }
 
         internal object BindForOutput(MobileTableAttribute attribute, Type paramType)

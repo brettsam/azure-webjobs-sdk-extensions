@@ -12,3 +12,4 @@ using System.Runtime.InteropServices;
 [assembly: AssemblyFileVersion("2.0.0.0")]
 [assembly: ComVisible(false)]
 [assembly: InternalsVisibleTo("Microsoft.Azure.WebJobs.Extensions.Tests")]
+[assembly: InternalsVisibleTo("Microsoft.Azure.WebJobs.Extensions.MobileApps")]

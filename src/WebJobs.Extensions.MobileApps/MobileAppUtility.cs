@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using System.Reflection;
 using Newtonsoft.Json.Linq;
@@ -38,6 +39,29 @@ namespace Microsoft.Azure.WebJobs.Extensions.MobileApps
             }
 
             return true;
+        }
+
+        internal static bool ThrowIfInvalidItemType(MobileTableAttribute attribute, Type paramType)
+        {
+            if (!IsValidItemType(paramType, attribute.TableName))
+            {
+                throw new ArgumentException(string.Format("The type '{0}' cannot be used in a MobileTable binding. The type must either be 'JObject' or have a public string 'Id' property.", paramType.Name));
+            }
+
+            return true;
+        }
+
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Usage", "CA1801:ReviewUnusedParameters", MessageId = "paramType")]
+        internal static void ValidateMobileAppUri(MobileAppsConfiguration config, MobileTableAttribute attribute, Type paramType)
+        {
+            if (config.MobileAppUri == null &&
+                string.IsNullOrEmpty(attribute.MobileAppUri))
+            {
+                throw new InvalidOperationException(
+                    string.Format(CultureInfo.CurrentCulture,
+                    "The mobile app Uri must be set either via a '{0}' app setting, via the MobileTableAttribute.MobileAppUri property or via MobileAppsConfiguration.MobileAppUri.",
+                    MobileAppsConfiguration.AzureWebJobsMobileAppUriName));
+            }
         }
     }
 }

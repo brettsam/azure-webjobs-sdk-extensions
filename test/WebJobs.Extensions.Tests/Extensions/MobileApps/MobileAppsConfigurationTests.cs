@@ -213,83 +213,83 @@ namespace Microsoft.Azure.WebJobs.Extensions.Tests.Extensions.MobileApps
             Assert.Equal(key1, key2);
         }
 
-        [Fact]
-        public async Task BindForQuery_ReturnsCorrectType()
-        {
-            var attribute = new MobileTableAttribute();
-            var config = new MobileAppsConfiguration();
+        //[Fact]
+        //public async Task BindForQuery_ReturnsCorrectType()
+        //{
+        //    var attribute = new MobileTableAttribute();
+        //    var config = new MobileAppsConfiguration();
 
-            var query = await config.BindForQueryAsync(attribute, typeof(IMobileServiceTableQuery<TodoItem>));
+        //    var query = await config.BindForQueryAsync(attribute, typeof(IMobileServiceTableQuery<TodoItem>));
 
-            Assert.True(typeof(IMobileServiceTableQuery<TodoItem>).IsAssignableFrom(query.GetType()));
-        }
+        //    Assert.True(typeof(IMobileServiceTableQuery<TodoItem>).IsAssignableFrom(query.GetType()));
+        //}
 
-        [Fact]
-        public async Task BindForQuery_WithTableName_ReturnsCorrectType()
-        {
-            var attribute = new MobileTableAttribute
-            {
-                TableName = "SomeOtherTable"
-            };
+        //[Fact]
+        //public async Task BindForQuery_WithTableName_ReturnsCorrectType()
+        //{
+        //    var attribute = new MobileTableAttribute
+        //    {
+        //        TableName = "SomeOtherTable"
+        //    };
 
-            var config = new MobileAppsConfiguration();
+        //    var config = new MobileAppsConfiguration();
 
-            var query = await config.BindForQueryAsync(attribute, typeof(IMobileServiceTableQuery<TodoItem>)) as IMobileServiceTableQuery<TodoItem>;
+        //    var query = await config.BindForQueryAsync(attribute, typeof(IMobileServiceTableQuery<TodoItem>)) as IMobileServiceTableQuery<TodoItem>;
 
-            Assert.NotNull(query);
-            Assert.Equal("SomeOtherTable", query.Table.TableName);
-        }
+        //    Assert.NotNull(query);
+        //    Assert.Equal("SomeOtherTable", query.Table.TableName);
+        //}
 
-        [Fact]
-        public void BindForTable_JObject_ReturnsCorrectTable()
-        {
-            // Arrange
-            var attribute = new MobileTableAttribute
-            {
-                TableName = "TodoItem"
-            };
-            var config = new MobileAppsConfiguration();
+        //[Fact]
+        //public void BindForTable_JObject_ReturnsCorrectTable()
+        //{
+        //    // Arrange
+        //    var attribute = new MobileTableAttribute
+        //    {
+        //        TableName = "TodoItem"
+        //    };
+        //    var config = new MobileAppsConfiguration();
 
-            // Act
-            var table = config.BindForTable(attribute);
+        //    // Act
+        //    var table = config.BindForTable(attribute);
 
-            // Assert
-            Assert.NotNull(table);
-            Assert.Equal("TodoItem", table.TableName);
-        }
+        //    // Assert
+        //    Assert.NotNull(table);
+        //    Assert.Equal("TodoItem", table.TableName);
+        //}
 
-        [Fact]
-        public async Task BindForTable_Poco_ReturnsCorrectTable()
-        {
-            // Arrange
-            var attribute = new MobileTableAttribute();
-            var config = new MobileAppsConfiguration();
+        //[Fact]
+        //public async Task BindForTable_Poco_ReturnsCorrectTable()
+        //{
+        //    // Arrange
+        //    var attribute = new MobileTableAttribute();
+        //    var config = new MobileAppsConfiguration();
 
-            // Act
-            var table = await config.BindForTableAsync(attribute, typeof(IMobileServiceTable<TodoItem>)) as IMobileServiceTable<TodoItem>;
+        //    // Act
+        //    var table = await config.BindForTableAsync(attribute, typeof(IMobileServiceTable<TodoItem>)) as IMobileServiceTable<TodoItem>;
 
-            // Assert
-            Assert.NotNull(table);
-            Assert.Equal("TodoItem", table.TableName);
-        }
+        //    // Assert
+        //    Assert.NotNull(table);
+        //    Assert.Equal("TodoItem", table.TableName);
+        //}
 
-        [Fact]
-        public async Task GetValue_PocoWithTableName_ReturnsCorrectTable()
-        {
-            // Arrange
-            var attribute = new MobileTableAttribute
-            {
-                TableName = "SomeOtherTable"
-            };
-            var config = new MobileAppsConfiguration();
+        //[Fact]
+        //public async Task GetValue_PocoWithTableName_ReturnsCorrectTable()
+        //{
+        //    // Arrange
+        //    var attribute = new MobileTableAttribute
+        //    {
+        //        TableName = "SomeOtherTable"
+        //    };
+        //    var config = new MobileAppsConfiguration();
 
-            // Act
-            var table = await config.BindForTableAsync(attribute, typeof(IMobileServiceTable<TodoItem>)) as IMobileServiceTable<TodoItem>;
+        //    // Act
+        //    var table = await config.BindForTableAsync(attribute, typeof(IMobileServiceTable<TodoItem>)) as IMobileServiceTable<TodoItem>;
 
-            // Assert
-            Assert.NotNull(table);
-            Assert.Equal("SomeOtherTable", table.TableName);
-        }
+        //    // Assert
+        //    Assert.NotNull(table);
+        //    Assert.Equal("SomeOtherTable", table.TableName);
+        //}
 
         private static void SetEnvironment(string key)
         {

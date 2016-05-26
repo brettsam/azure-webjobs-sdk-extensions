@@ -115,7 +115,6 @@
       <SubType>Designer</SubType>
     </CodeAnalysisDictionary>
     <Compile Include="Bindings\MobileTableAsyncCollector.cs" />
-    <Compile Include="Bindings\OutputBinding.cs" />
     <Compile Include="Config\DefaultMobileServiceClientFactory.cs" />
     <Compile Include="Config\IMobileServiceClientFactory.cs" />
     <Compile Include="Config\MobileServiceApiKeyHandler.cs" />
@@ -123,11 +122,15 @@
     <Compile Include="Config\MobileAppsConfiguration.cs" />
     <Compile Include="MobileTableContext.cs" />
     <Compile Include="Config\MobileAppsJobHostConfigurationExtensions.cs" />
-    <Compile Include="Bindings\MobileTableItemValueBinder.cs" />
     <Compile Include="MobileAppUtility.cs" />
     <Compile Include="Extensions\IMobileServiceClientExtensions.cs" />
     <Compile Include="GlobalSuppressions.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Rules\ClientRule.cs" />
+    <Compile Include="Rules\ExactTableRule.cs" />
+    <Compile Include="Rules\ItemRule.cs" />
+    <Compile Include="Rules\QueryRule.cs" />
+    <Compile Include="Rules\TableRule.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="app.config" />
