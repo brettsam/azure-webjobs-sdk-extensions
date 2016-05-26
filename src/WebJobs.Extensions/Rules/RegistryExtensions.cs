@@ -33,6 +33,11 @@ namespace Microsoft.Azure.WebJobs.Extensions.Rules
                 ruleTypes.Add(lastRuleType);
             }
 
+            // any output rules need to be moved to the front
+            IEnumerable<Type> outputRuleTypes = ruleTypes.Where(t => typeof(OutputBindingRule<TAttribute>).IsAssignableFrom(t));
+            ruleTypes.RemoveAll(r => outputRuleTypes.Contains(r));
+            ruleTypes.InsertRange(0, outputRuleTypes);
+
             var providers = ruleTypes.Select(r => new RuleBindingProvider<TAttribute>(r, config));
             var all = new GenericCompositeBindingProvider<TAttribute>(providers);
             registry.RegisterExtension<IBindingProvider>(all);

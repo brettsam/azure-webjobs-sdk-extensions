@@ -241,66 +241,66 @@ namespace Microsoft.Azure.WebJobs.Extensions.Tests.Extensions.MobileApps
 
         private class MobileTableEndToEndFunctions
         {
-            //[NoAutomaticTrigger]
-            //public static void Outputs(
-            //    [MobileTable(TableName = TableName)] out JObject newJObject,
-            //    [MobileTable(TableName = TableName)] out JObject[] arrayJObject,
-            //    [MobileTable(TableName = TableName)] IAsyncCollector<JObject> asyncCollectorJObject,
-            //    [MobileTable(TableName = TableName)] ICollector<JObject> collectorJObject,
-            //    [MobileTable] out TodoItem newPoco,
-            //    [MobileTable] out TodoItem[] arrayPoco,
-            //    [MobileTable] IAsyncCollector<TodoItem> asyncCollectorPoco,
-            //    [MobileTable] ICollector<TodoItem> collectorPoco,
-            //    [MobileTable(TableName = TableName)] out object newObject, // we explicitly allow object
-            //    [MobileTable(TableName = TableName)] out object[] arrayObject,
-            //    [MobileTable(TableName = TableName)] IAsyncCollector<object> asyncCollectorObject,
-            //    [MobileTable(TableName = TableName)] ICollector<object> collectorObject,
-            //    TraceWriter trace)
-            //{
-            //    newJObject = new JObject();
-            //    arrayJObject = new[]
-            //    {
-            //        new JObject(),
-            //        new JObject()
-            //    };
-            //    Task.WaitAll(new[]
-            //    {
-            //        asyncCollectorJObject.AddAsync(new JObject()),
-            //        asyncCollectorJObject.AddAsync(new JObject())
-            //    });
-            //    collectorJObject.Add(new JObject());
-            //    collectorJObject.Add(new JObject());
+            [NoAutomaticTrigger]
+            public static void Outputs(
+                [MobileTable(TableName = TableName)] out JObject newJObject,
+                [MobileTable(TableName = TableName)] out JObject[] arrayJObject,
+                //[MobileTable(TableName = TableName)] IAsyncCollector<JObject> asyncCollectorJObject,
+                //[MobileTable(TableName = TableName)] ICollector<JObject> collectorJObject,
+                [MobileTable] out TodoItem newPoco,
+                [MobileTable] out TodoItem[] arrayPoco,
+                //[MobileTable] IAsyncCollector<TodoItem> asyncCollectorPoco,
+                //[MobileTable] ICollector<TodoItem> collectorPoco,
+                [MobileTable(TableName = TableName)] out object newObject, // we explicitly allow object
+                [MobileTable(TableName = TableName)] out object[] arrayObject,
+                //[MobileTable(TableName = TableName)] IAsyncCollector<object> asyncCollectorObject,
+                //[MobileTable(TableName = TableName)] ICollector<object> collectorObject,
+                TraceWriter trace)
+            {
+                newJObject = new JObject();
+                arrayJObject = new[]
+                {
+                    new JObject(),
+                    new JObject()
+                };
+                //Task.WaitAll(new[]
+                //{
+                //    asyncCollectorJObject.AddAsync(new JObject()),
+                //    asyncCollectorJObject.AddAsync(new JObject())
+                //});
+                //collectorJObject.Add(new JObject());
+                //collectorJObject.Add(new JObject());
 
-            //    newPoco = new TodoItem();
-            //    arrayPoco = new[]
-            //    {
-            //        new TodoItem(),
-            //        new TodoItem()
-            //    };
-            //    Task.WaitAll(new[]
-            //    {
-            //        asyncCollectorPoco.AddAsync(new TodoItem()),
-            //        asyncCollectorPoco.AddAsync(new TodoItem())
-            //    });
-            //    collectorPoco.Add(new TodoItem());
-            //    collectorPoco.Add(new TodoItem());
+                newPoco = new TodoItem();
+                arrayPoco = new[]
+                {
+                    new TodoItem(),
+                    new TodoItem()
+                };
+                //Task.WaitAll(new[]
+                //{
+                //    asyncCollectorPoco.AddAsync(new TodoItem()),
+                //    asyncCollectorPoco.AddAsync(new TodoItem())
+                //});
+                //collectorPoco.Add(new TodoItem());
+                //collectorPoco.Add(new TodoItem());
 
-            //    newObject = new { };
-            //    arrayObject = new[]
-            //    {
-            //        new { },
-            //        new { }
-            //    };
-            //    Task.WaitAll(new[]
-            //    {
-            //        asyncCollectorObject.AddAsync(new TodoItem()),
-            //        asyncCollectorObject.AddAsync(new TodoItem())
-            //    });
-            //    collectorObject.Add(new { });
-            //    collectorObject.Add(new { });
+                newObject = new { };
+                arrayObject = new[]
+                {
+                    new { },
+                    new { }
+                };
+                //Task.WaitAll(new[]
+                //{
+                //    asyncCollectorObject.AddAsync(new TodoItem()),
+                //    asyncCollectorObject.AddAsync(new TodoItem())
+                //});
+                //collectorObject.Add(new { });
+                //collectorObject.Add(new { });
 
-            //    trace.Warning("Outputs");
-            //}
+                trace.Warning("Outputs");
+            }
 
             [NoAutomaticTrigger]
             public static void Client(

@@ -148,6 +148,10 @@
     <Compile Include="Rules\DefaultAttributeInvokerDescriptor.cs" />
     <Compile Include="Rules\GenericCompositeBindingProvider.cs" />
     <Compile Include="Rules\IBindingRule.cs" />
+    <Compile Include="Rules\OutputBindingRule.cs" />
+    <Compile Include="Rules\OutputBindingRule.TMessage.cs" />
+    <Compile Include="Rules\OutputRules\OutArrayBindingRule.cs" />
+    <Compile Include="Rules\OutputRules\OutBindingRule.cs" />
     <Compile Include="Rules\RegistryExtensions.cs" />
     <Compile Include="Rules\RuleBinding.cs" />
     <Compile Include="Rules\RuleBindingProvider.cs" />
