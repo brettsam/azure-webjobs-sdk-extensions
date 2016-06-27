@@ -202,6 +202,7 @@ namespace Microsoft.Azure.WebJobs.Extensions.Tests.Extensions.DocumentDB
             var resolver = new TestNameResolver();
             resolver.Values.Add("Database", "ResolvedDatabase");
             resolver.Values.Add("Collection", "ResolvedCollection");
+            resolver.Values.Add(DocumentDBAttribute.AzureWebJobsDocumentDBConnectionStringName, "abc");
 
             config.NameResolver = resolver;
 
@@ -216,33 +217,33 @@ namespace Microsoft.Azure.WebJobs.Extensions.Tests.Extensions.DocumentDB
 
         private class DocumentDBEndToEndFunctions
         {
-            [NoAutomaticTrigger]
-            public static void Outputs(
-                [DocumentDB(DatabaseName, CollectionName)] out object newItem,
-                [DocumentDB(DatabaseName, CollectionName)] out object[] arrayItem,
-                [DocumentDB(DatabaseName, CollectionName)] IAsyncCollector<object> asyncCollector,
-                [DocumentDB(DatabaseName, CollectionName)] ICollector<object> collector,
-                TraceWriter trace)
-            {
-                newItem = new { };
+            //[NoAutomaticTrigger]
+            //public static void Outputs(
+            //    [DocumentDB(DatabaseName, CollectionName)] out object newItem,
+            //    [DocumentDB(DatabaseName, CollectionName)] out object[] arrayItem,
+            //    [DocumentDB(DatabaseName, CollectionName)] IAsyncCollector<object> asyncCollector,
+            //    [DocumentDB(DatabaseName, CollectionName)] ICollector<object> collector,
+            //    TraceWriter trace)
+            //{
+            //    newItem = new { };
 
-                arrayItem = new Document[]
-                {
-                    new Document(),
-                    new Document()
-                };
+            //    arrayItem = new Document[]
+            //    {
+            //        new Document(),
+            //        new Document()
+            //    };
 
-                Task.WaitAll(new[] 
-                {
-                    asyncCollector.AddAsync(new { }),
-                    asyncCollector.AddAsync(new { })
-                });
+            //    Task.WaitAll(new[]
+            //    {
+            //        asyncCollector.AddAsync(new { }),
+            //        asyncCollector.AddAsync(new { })
+            //    });
 
-                collector.Add(new { });
-                collector.Add(new { });
+            //    collector.Add(new { });
+            //    collector.Add(new { });
 
-                trace.Warning("Outputs");
-            }
+            //    trace.Warning("Outputs");
+            //}
 
             [NoAutomaticTrigger]
             public static void Client(
@@ -254,45 +255,45 @@ namespace Microsoft.Azure.WebJobs.Extensions.Tests.Extensions.DocumentDB
                 trace.Warning("Client");
             }
 
-            [NoAutomaticTrigger]
-            public static void Inputs(
-                [QueueTrigger("fakequeue1")] string triggerData,
-                [DocumentDB(DatabaseName, CollectionName, Id = "{QueueTrigger}")] dynamic item1,
-                [DocumentDB(DatabaseName, CollectionName, Id = "docid2", PartitionKey = "{QueueTrigger}")] dynamic item2,
-                [DocumentDB(DatabaseName, CollectionName, Id = "docid3", PartitionKey = "partkey3")] dynamic item3,
-                [DocumentDB("%Database%", "%Collection%", Id = "docid4")] dynamic item4,
-                TraceWriter trace)
-            {
-                Assert.NotNull(item1);
-                Assert.NotNull(item2);
-                Assert.NotNull(item3);
-                Assert.NotNull(item4);
+            //[NoAutomaticTrigger]
+            //public static void Inputs(
+            //    [QueueTrigger("fakequeue1")] string triggerData,
+            //    [DocumentDB(DatabaseName, CollectionName, Id = "{QueueTrigger}")] dynamic item1,
+            //    [DocumentDB(DatabaseName, CollectionName, Id = "docid2", PartitionKey = "{QueueTrigger}")] dynamic item2,
+            //    [DocumentDB(DatabaseName, CollectionName, Id = "docid3", PartitionKey = "partkey3")] dynamic item3,
+            //    [DocumentDB("%Database%", "%Collection%", Id = "docid4")] dynamic item4,
+            //    TraceWriter trace)
+            //{
+            //    Assert.NotNull(item1);
+            //    Assert.NotNull(item2);
+            //    Assert.NotNull(item3);
+            //    Assert.NotNull(item4);
 
-                // add some value to item2
-                item2.text = "changed";
+            //    // add some value to item2
+            //    item2.text = "changed";
 
-                trace.Warning("Inputs");
-            }
+            //    trace.Warning("Inputs");
+            //}
 
-            [NoAutomaticTrigger]
-            public static void TriggerObject(
-                [QueueTrigger("fakequeue1")] QueueData triggerData,
-                [DocumentDB(DatabaseName, CollectionName, Id = "{DocumentId}", PartitionKey = "{PartitionKey}")] dynamic item1,
-                TraceWriter trace)
-            {
-                Assert.NotNull(item1);
+            //[NoAutomaticTrigger]
+            //public static void TriggerObject(
+            //    [QueueTrigger("fakequeue1")] QueueData triggerData,
+            //    [DocumentDB(DatabaseName, CollectionName, Id = "{DocumentId}", PartitionKey = "{PartitionKey}")] dynamic item1,
+            //    TraceWriter trace)
+            //{
+            //    Assert.NotNull(item1);
 
-                trace.Warning("TriggerObject");
-            }
+            //    trace.Warning("TriggerObject");
+            //}
         }
 
         private class DocumentDBNoConnectionStringFunctions
         {
-            [NoAutomaticTrigger]
-            public static void Client(
-                [DocumentDB] DocumentClient client)
-            {
-            }
+            //[NoAutomaticTrigger]
+            //public static void Client(
+            //    [DocumentDB] DocumentClient client)
+            //{
+            //}
         }
 
         private class QueueData

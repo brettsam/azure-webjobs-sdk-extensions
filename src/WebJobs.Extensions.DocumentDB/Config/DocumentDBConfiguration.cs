@@ -18,7 +18,6 @@ namespace Microsoft.Azure.WebJobs.Extensions.DocumentDB
     /// </summary>
     public class DocumentDBConfiguration : IExtensionConfigProvider
     {
-        internal const string AzureWebJobsDocumentDBConnectionStringName = "AzureWebJobsDocumentDBConnectionString";
         internal readonly ConcurrentDictionary<string, IDocumentDBService> ClientCache = new ConcurrentDictionary<string, IDocumentDBService>();
 
         /// <summary>
@@ -26,7 +25,6 @@ namespace Microsoft.Azure.WebJobs.Extensions.DocumentDB
         /// </summary>
         public DocumentDBConfiguration()
         {
-            ConnectionString = GetSettingFromConfigOrEnvironment(AzureWebJobsDocumentDBConnectionStringName);
             DocumentDBServiceFactory = new DefaultDocumentDBServiceFactory();
         }
 
@@ -68,7 +66,7 @@ namespace Microsoft.Azure.WebJobs.Extensions.DocumentDB
                 throw new InvalidOperationException(
                     string.Format(CultureInfo.CurrentCulture,
                     "The DocumentDB connection string must be set either via a '{0}' app setting, via the DocumentDBAttribute.ConnectionString property or via DocumentDBConfiguration.ConnectionString.",
-                    AzureWebJobsDocumentDBConnectionStringName));
+                    DocumentDBAttribute.AzureWebJobsDocumentDBConnectionStringName));
             }
         }
 
@@ -105,7 +103,7 @@ namespace Microsoft.Azure.WebJobs.Extensions.DocumentDB
 
             if (!string.IsNullOrEmpty(attributeConnectionString))
             {
-                resolvedConnectionString = GetSettingFromConfigOrEnvironment(attributeConnectionString);
+                resolvedConnectionString = attributeConnectionString;
             }
 
             return resolvedConnectionString;
@@ -132,28 +130,7 @@ namespace Microsoft.Azure.WebJobs.Extensions.DocumentDB
 
         internal static string GetSettingFromConfigOrEnvironment(string key)
         {
-            string value = null;
-
-            if (string.IsNullOrEmpty(value))
-            {
-                ConnectionStringSettings connectionString = ConfigurationManager.ConnectionStrings[key];
-                if (connectionString != null)
-                {
-                    value = connectionString.ConnectionString;
-                }
-
-                if (string.IsNullOrEmpty(value))
-                {
-                    value = ConfigurationManager.AppSettings[key];
-                }
-
-                if (string.IsNullOrEmpty(value))
-                {
-                    value = Environment.GetEnvironmentVariable(key);
-                }
-            }
-
-            return value;
+            return key;
         }
     }
 }

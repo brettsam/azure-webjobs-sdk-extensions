@@ -14,7 +14,7 @@ namespace Microsoft.Azure.WebJobs.Extensions.Tests.Extensions.DocumentDB
 {
     public class DocumentDBConfigurationTests
     {
-        private const string ConnectionStringKey = DocumentDBConfiguration.AzureWebJobsDocumentDBConnectionStringName;
+        private const string ConnectionStringKey = DocumentDBAttribute.AzureWebJobsDocumentDBConnectionStringName;
         private const string AppSettingKey = ConnectionStringKey + "_appsetting";
         private const string EnvironmentKey = ConnectionStringKey + "_environment";
         private const string NeitherKey = ConnectionStringKey + "_neither";
@@ -22,10 +22,10 @@ namespace Microsoft.Azure.WebJobs.Extensions.Tests.Extensions.DocumentDB
         [Fact]
         public async Task Configuration_Caches_Clients()
         {
-            // Arrange            
+            // Arrange
             var config = new DocumentDBConfiguration
             {
-                ConnectionString = "AccountEndpoint=https://someuri;AccountKey=some_key",                
+                ConnectionString = "AccountEndpoint=https://someuri;AccountKey=some_key",
             };
             var attribute = new DocumentDBAttribute();
 
@@ -47,7 +47,7 @@ namespace Microsoft.Azure.WebJobs.Extensions.Tests.Extensions.DocumentDB
             // Act
             var connString = DocumentDBConfiguration.GetSettingFromConfigOrEnvironment(ConnectionStringKey);
 
-            // Assert            
+            // Assert
             Assert.Equal("AccountEndpoint=https://fromconnstrings;AccountKey=some_key", connString);
 
             ClearEnvironment();
@@ -92,7 +92,7 @@ namespace Microsoft.Azure.WebJobs.Extensions.Tests.Extensions.DocumentDB
             // Act
             var connString = DocumentDBConfiguration.GetSettingFromConfigOrEnvironment(NeitherKey);
 
-            // Assert            
+            // Assert
             Assert.Null(connString);
         }
 
@@ -102,7 +102,7 @@ namespace Microsoft.Azure.WebJobs.Extensions.Tests.Extensions.DocumentDB
         [InlineData("", "AccountEndpoint=https://fromconnstrings;AccountKey=some_key")]
         public void CreateContext_AttributeUri_Wins(string attributeConnection, string expectedConnection)
         {
-            // Arrange            
+            // Arrange
             var attribute = new DocumentDBAttribute
             {
                 ConnectionStringSetting = attributeConnection
@@ -129,7 +129,7 @@ namespace Microsoft.Azure.WebJobs.Extensions.Tests.Extensions.DocumentDB
         [Fact]
         public void CreateContext_UsesDefaultRetryValue()
         {
-            // Arrange            
+            // Arrange
             var attribute = new DocumentDBAttribute();
             var config = new DocumentDBConfiguration();
 
@@ -150,6 +150,6 @@ namespace Microsoft.Azure.WebJobs.Extensions.Tests.Extensions.DocumentDB
             Environment.SetEnvironmentVariable(ConnectionStringKey, null);
             Environment.SetEnvironmentVariable(EnvironmentKey, null);
             Environment.SetEnvironmentVariable(NeitherKey, null);
-        }       
+        }
     }
 }

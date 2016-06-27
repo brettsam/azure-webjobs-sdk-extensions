@@ -21,11 +21,14 @@ namespace Microsoft.Azure.WebJobs
     [AttributeUsage(AttributeTargets.Parameter)]
     public sealed class DocumentDBAttribute : Attribute
     {
+        internal const string AzureWebJobsDocumentDBConnectionStringName = "AzureWebJobsDocumentDBConnectionString";
+
         /// <summary>
         /// Constructs a new instance.
         /// </summary>
         public DocumentDBAttribute()
         {
+            ConnectionStringSetting = AzureWebJobsDocumentDBConnectionStringName;
         }
 
         /// <summary>
@@ -34,20 +37,21 @@ namespace Microsoft.Azure.WebJobs
         /// <param name="databaseName">The DocumentDB database name.</param>
         /// <param name="collectionName">The DocumentDB collection name.</param>
         public DocumentDBAttribute(string databaseName, string collectionName)
+            : this()
         {
             DatabaseName = databaseName;
             CollectionName = collectionName;
         }
 
         /// <summary>
-        /// The name of the database to which the parameter applies.        
+        /// The name of the database to which the parameter applies.
         /// May include binding parameters.
         /// </summary>
         [AutoResolve]
         public string DatabaseName { get; private set; }
 
         /// <summary>
-        /// The name of the collection to which the parameter applies. 
+        /// The name of the collection to which the parameter applies.
         /// May include binding parameters.
         /// </summary>
         [AutoResolve]
@@ -64,6 +68,7 @@ namespace Microsoft.Azure.WebJobs
         /// Optional. A string value indicating the app setting to use as the DocumentDB connection string, if different
         /// than the one specified in the <see cref="DocumentDBConfiguration"/>.
         /// </summary>
+        [AutoResolve(IsSetting = true)]
         public string ConnectionStringSetting { get; set; }
 
         /// <summary>
@@ -75,7 +80,7 @@ namespace Microsoft.Azure.WebJobs
 
         /// <summary>
         /// Optional.
-        /// When specified on an output binding and <see cref="CreateIfNotExists"/> is true, defines the partition key 
+        /// When specified on an output binding and <see cref="CreateIfNotExists"/> is true, defines the partition key
         /// path for the created collection.
         /// When specified on an input binding, specifies the partition key value for the lookup.
         /// May include binding parameters.
