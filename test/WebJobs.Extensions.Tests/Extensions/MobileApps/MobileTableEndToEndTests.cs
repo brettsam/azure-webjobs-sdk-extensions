@@ -353,16 +353,16 @@ namespace Microsoft.Azure.WebJobs.Extensions.Tests.Extensions.MobileApps
                 collectorJObject.Add(new JObject());
                 collectorJObject.Add(new JObject());
 
-                newPoco = new TodoItem();
+                newPoco = new TodoItem { Text = "newPoco" };
                 arrayPoco = new[]
                 {
-                    new TodoItem(),
-                    new TodoItem()
+                    new TodoItem { Text="arrayPoco1" },
+                    new TodoItem { Text="arrayPoco2" },
                 };
                 Task.WaitAll(new[]
                 {
-                    asyncCollectorPoco.AddAsync(new TodoItem()),
-                    asyncCollectorPoco.AddAsync(new TodoItem())
+                    asyncCollectorPoco.AddAsync(new TodoItem { Text = "AsyncCollectorPoco1" }),
+                    asyncCollectorPoco.AddAsync(new TodoItem { Text = "AsyncCollectorPoco2" })
                 });
                 collectorPoco.Add(new TodoItem());
                 collectorPoco.Add(new TodoItem());

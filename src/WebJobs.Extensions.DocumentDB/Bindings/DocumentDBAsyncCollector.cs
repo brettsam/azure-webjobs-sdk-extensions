@@ -8,11 +8,10 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Azure.Documents;
 using Microsoft.Azure.Documents.Client;
-using Newtonsoft.Json.Linq;
 
 namespace Microsoft.Azure.WebJobs.Extensions.DocumentDB
 {
-    internal class DocumentDBAsyncCollector<T> : IAsyncCollector<T>
+    internal class DocumentDBAsyncCollector : IAsyncCollector<Document>
     {
         private DocumentDBContext _docDBContext;
 
@@ -21,7 +20,7 @@ namespace Microsoft.Azure.WebJobs.Extensions.DocumentDB
             _docDBContext = docDBContext;
         }
 
-        public async Task AddAsync(T item, CancellationToken cancellationToken = default(CancellationToken))
+        public async Task AddAsync(Document item, CancellationToken cancellationToken = default(CancellationToken))
         {
             bool create = false;
             try
@@ -56,18 +55,11 @@ namespace Microsoft.Azure.WebJobs.Extensions.DocumentDB
             return Task.FromResult(0);
         }
 
-        internal static async Task UpsertDocument(DocumentDBContext context, T item)
+        internal static async Task UpsertDocument(DocumentDBContext context, Document item)
         {
-            Uri collectionUri = UriFactory.CreateDocumentCollectionUri(context.ResolvedAttribute.DatabaseName, context.ResolvedAttribute.CollectionName);
+            Uri collectionUri = UriFactory.CreateDocumentCollectionUri(context.ResolvedAttribute.DatabaseName, context.ResolvedAttribute.CollectionName);   
 
-            // DocumentClient does not accept strings directly.
-            object convertedItem = item;
-            if (item is string)
-            {
-                convertedItem = JObject.Parse(item.ToString());
-            }
-
-            await DocumentDBUtility.RetryAsync(() => context.Service.UpsertDocumentAsync(collectionUri, convertedItem), context.MaxThrottleRetries);
+            await DocumentDBUtility.RetryAsync(() => context.Service.UpsertDocumentAsync(collectionUri, item), context.MaxThrottleRetries);
         }
 
         internal static async Task CreateIfNotExistAsync(DocumentDBContext context)

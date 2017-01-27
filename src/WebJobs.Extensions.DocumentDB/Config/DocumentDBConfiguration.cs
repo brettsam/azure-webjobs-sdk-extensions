@@ -2,13 +2,15 @@
 // Licensed under the MIT License. See License.txt in the project root for license information.
 
 using System;
-using System.Collections.Concurrent;
 using System.Globalization;
 using System.Threading.Tasks;
+using Microsoft.Azure.Documents;
 using Microsoft.Azure.Documents.Client;
+using Microsoft.Azure.WebJobs.Extensions.DocumentDB.Bindings;
 using Microsoft.Azure.WebJobs.Host;
 using Microsoft.Azure.WebJobs.Host.Bindings;
 using Microsoft.Azure.WebJobs.Host.Config;
+using Newtonsoft.Json.Linq;
 
 namespace Microsoft.Azure.WebJobs.Extensions.DocumentDB
 {
@@ -18,8 +20,8 @@ namespace Microsoft.Azure.WebJobs.Extensions.DocumentDB
     public class DocumentDBConfiguration : IExtensionConfigProvider
     {
         internal const string AzureWebJobsDocumentDBConnectionStringName = "AzureWebJobsDocumentDBConnectionString";
-        internal readonly ConcurrentDictionary<string, IDocumentDBService> ClientCache = new ConcurrentDictionary<string, IDocumentDBService>();
-        private string _defaultConnectionString;
+
+        private DocumentDBContextFactory _contextFactory;
 
         /// <summary>
         /// Constructs a new instance.
@@ -46,27 +48,29 @@ namespace Microsoft.Azure.WebJobs.Extensions.DocumentDB
 
             INameResolver nameResolver = context.Config.GetService<INameResolver>();
             IConverterManager converterManager = context.Config.GetService<IConverterManager>();
+            converterManager.AddConverterBuilder<SingleType, Document, DocumentDBAttribute>(typeof(DocumentDBPocoConverter<>));
 
             // Use this if there is no other connection string set.
-            _defaultConnectionString = nameResolver.Resolve(AzureWebJobsDocumentDBConnectionStringName);
+            string defaultConnectionString = nameResolver.Resolve(AzureWebJobsDocumentDBConnectionStringName);
+
+            _contextFactory = new DocumentDBContextFactory(this, defaultConnectionString, context.Trace);
 
             BindingFactory factory = new BindingFactory(nameResolver, converterManager);
+            IBindingProvider outputProvider = factory.BindToAsyncCollector<DocumentDBAttribute, Document>((attr) => BindForOutput(attr));
 
-            IBindingProvider outputProvider = factory.BindToGenericAsyncCollector<DocumentDBAttribute>((attr, t) => BindForOutput(attr, t, context.Trace));
+            IBindingProvider clientProvider = factory.BindToInput<DocumentDBAttribute, DocumentClient>(false, typeof(DocumentDBClientRule), _contextFactory);
 
-            IBindingProvider clientProvider = factory.BindToExactType<DocumentDBAttribute, DocumentClient>(BindForClient);
-
-            IBindingProvider itemProvider = factory.BindToGenericValueProvider<DocumentDBAttribute>((attr, t) => BindForItemAsync(attr, t, context.Trace));
+            IBindingProvider itemProvider = factory.BindToGenericValueProvider<DocumentDBAttribute>((attr, t) => BindForItemAsync(attr, t));
 
             IExtensionRegistry extensions = context.Config.GetService<IExtensionRegistry>();
-            extensions.RegisterBindingRules<DocumentDBAttribute>(ValidateConnection, nameResolver, outputProvider, clientProvider, itemProvider);
+            extensions.RegisterBindingRules<DocumentDBAttribute>((attr, t) => ValidateConnection(attr, defaultConnectionString), nameResolver, outputProvider, clientProvider, itemProvider);
         }
 
-        internal void ValidateConnection(DocumentDBAttribute attribute, Type paramType)
+        internal void ValidateConnection(DocumentDBAttribute attribute, string defaultConnectionString)
         {
             if (string.IsNullOrEmpty(ConnectionString) &&
                 string.IsNullOrEmpty(attribute.ConnectionStringSetting) &&
-                string.IsNullOrEmpty(_defaultConnectionString))
+                string.IsNullOrEmpty(defaultConnectionString))
             {
                 throw new InvalidOperationException(
                     string.Format(CultureInfo.CurrentCulture,
@@ -75,26 +79,15 @@ namespace Microsoft.Azure.WebJobs.Extensions.DocumentDB
             }
         }
 
-        internal object BindForOutput(DocumentDBAttribute attribute, Type parameterType, TraceWriter trace)
+        internal DocumentDBAsyncCollector BindForOutput(DocumentDBAttribute attribute)
         {
-            DocumentDBContext context = CreateContext(attribute, trace);
-
-            Type collectorType = typeof(DocumentDBAsyncCollector<>).MakeGenericType(parameterType);
-
-            return Activator.CreateInstance(collectorType, context);
+            DocumentDBContext context = _contextFactory.CreateContext(attribute);
+            return new DocumentDBAsyncCollector(context);
         }
 
-        internal DocumentClient BindForClient(DocumentDBAttribute attribute)
+        internal Task<IValueBinder> BindForItemAsync(DocumentDBAttribute attribute, Type type)
         {
-            string resolvedConnectionString = ResolveConnectionString(attribute.ConnectionStringSetting);
-            IDocumentDBService service = GetService(resolvedConnectionString);
-
-            return service.GetClient();
-        }
-
-        internal Task<IValueBinder> BindForItemAsync(DocumentDBAttribute attribute, Type type, TraceWriter trace)
-        {
-            DocumentDBContext context = CreateContext(attribute, trace);
+            DocumentDBContext context = _contextFactory.CreateContext(attribute);
 
             Type genericType = typeof(DocumentDBItemValueBinder<>).MakeGenericType(type);
             IValueBinder binder = (IValueBinder)Activator.CreateInstance(genericType, context);
@@ -102,41 +95,42 @@ namespace Microsoft.Azure.WebJobs.Extensions.DocumentDB
             return Task.FromResult(binder);
         }
 
-        internal string ResolveConnectionString(string attributeConnectionString)
+        internal class SingleType : OpenType
         {
-            // First, try the Attribute's string.
-            if (!string.IsNullOrEmpty(attributeConnectionString))
-            {
-                return attributeConnectionString;
-            }
+            public override bool IsMatch(Type type)
+            {               
+                if (type == null)
+                {
+                    throw new ArgumentNullException(nameof(type));
+                } 
 
-            // Second, try the config's ConnectionString
-            if (!string.IsNullOrEmpty(ConnectionString))
-            {
-                return ConnectionString;
+                return !type.IsArray;
             }
-
-            // Finally, fall back to the default.
-            return _defaultConnectionString;
         }
 
-        internal IDocumentDBService GetService(string connectionString)
+        internal class DocumentDBPocoConverter<T> where T : class
         {
-            return ClientCache.GetOrAdd(connectionString, (c) => DocumentDBServiceFactory.CreateService(c));
-        }
-
-        internal DocumentDBContext CreateContext(DocumentDBAttribute attribute, TraceWriter trace)
-        {
-            string resolvedConnectionString = ResolveConnectionString(attribute.ConnectionStringSetting);
-
-            IDocumentDBService service = GetService(resolvedConnectionString);
-
-            return new DocumentDBContext
+            [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Performance", "CA1822:MarkMembersAsStatic")]
+            public Document Convert(T value)
             {
-                Service = service,
-                Trace = trace,
-                ResolvedAttribute = attribute
-            };
+                Document doc = value as Document;
+                if (doc != null)
+                {
+                    return doc;
+                }
+
+                JObject jobject = null;
+                if (value is string)
+                {
+                    jobject = JObject.Parse(value.ToString());
+                }
+                else
+                {
+                    jobject = JObject.FromObject(value);
+                }
+
+                return jobject.ToObject<Document>();
+            }
         }
     }
 }

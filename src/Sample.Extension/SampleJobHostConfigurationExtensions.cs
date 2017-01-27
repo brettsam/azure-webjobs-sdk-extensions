@@ -35,7 +35,7 @@ namespace Microsoft.Azure.WebJobs
                     new SampleTriggerAttributeBindingProvider());
 
                 // Register our Table binding extension
-                context.Config.RegisterTableBindingExtension(new SampleTableBindingProvider());
+                //context.Config.RegisterTableBindingExtension(new SampleTableBindingProvider());
             }
         }
     }

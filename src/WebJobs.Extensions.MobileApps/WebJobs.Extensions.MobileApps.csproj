@@ -118,11 +118,17 @@
       <Link>CustomDictionary.xml</Link>
       <SubType>Designer</SubType>
     </CodeAnalysisDictionary>
-    <Compile Include="Bindings\MobileTableAsyncCollector.cs" />
+    <Compile Include="Bindings\MobileTablePocoAsyncCollector.cs" />
+    <Compile Include="Bindings\MobileTableJObjectAsyncCollector.cs" />
+    <Compile Include="Bindings\MobileTableClientRule.cs" />
+    <Compile Include="Bindings\MobileTableJObjectRule.cs" />
+    <Compile Include="Bindings\MobileTablePocoRule.cs" />
+    <Compile Include="Bindings\MobileTableQueryRule.cs" />
     <Compile Include="Config\DefaultMobileServiceClientFactory.cs" />
     <Compile Include="Config\IMobileServiceClientFactory.cs" />
     <Compile Include="Config\MobileServiceApiKeyHandler.cs" />
     <Compile Include="Bindings\MobileAppsScriptBindingProvider.cs" />
+    <Compile Include="Config\MobileTableContextFactory.cs" />
     <Compile Include="MobileTableAttribute.cs" />
     <Compile Include="Config\MobileAppsConfiguration.cs" />
     <Compile Include="MobileTableContext.cs" />

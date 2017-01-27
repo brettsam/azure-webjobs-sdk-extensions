@@ -202,8 +202,6 @@
     <Compile Include="Extensions\DocumentDB\DocumentDBEndToEndTests.cs" />
     <Compile Include="Extensions\DocumentDB\DocumentDBItemValueBinderTests.cs" />
     <Compile Include="Extensions\DocumentDB\TestDocumentDBServiceFactory.cs" />
-    <Compile Include="Extensions\MobileApps\MobileTableAsyncCollectorTests.cs" />
-    <Compile Include="Extensions\MobileApps\MobileAppsConfigurationTests.cs" />
     <Compile Include="Extensions\MobileApps\MobileTableEndToEndTests.cs" />
     <Compile Include="Extensions\MobileApps\MobileTableItemValueBinderTests.cs" />
     <Compile Include="Extensions\MobileApps\MobileTableTestHelper.cs" />
@@ -214,8 +212,6 @@
     <Compile Include="Extensions\MobileApps\Models\TodoItem.cs" />
     <Compile Include="Extensions\MobileApps\TestHandler.cs" />
     <Compile Include="Extensions\MobileApps\TestMobileServiceClientFactory.cs" />
-    <Compile Include="Extensions\DocumentDB\DocumentDBAsyncCollectorTests.cs" />
-    <Compile Include="Extensions\DocumentDB\DocumentDBConfigurationTests.cs" />
     <Compile Include="Extensions\DocumentDB\DocumentDBTestUtility.cs" />
     <Compile Include="Extensions\DocumentDB\DocumentDBUtilityTests.cs" />
     <Compile Include="Extensions\DocumentDB\Models\Item.cs" />

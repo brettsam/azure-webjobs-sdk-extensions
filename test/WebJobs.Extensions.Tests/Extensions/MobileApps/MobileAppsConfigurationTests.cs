@@ -7,6 +7,8 @@ using System.Linq;
 using System.Net.Http;
 using System.Threading.Tasks;
 using Microsoft.Azure.WebJobs.Extensions.MobileApps;
+using Microsoft.Azure.WebJobs.Extensions.MobileApps.Bindings;
+using Microsoft.Azure.WebJobs.Extensions.MobileApps.Config;
 using Microsoft.Azure.WebJobs.Extensions.Tests.Common;
 using Microsoft.Azure.WebJobs.Extensions.Tests.MobileApps;
 using Microsoft.Azure.WebJobs.Host.Config;
@@ -278,7 +280,9 @@ namespace Microsoft.Azure.WebJobs.Extensions.Tests.Extensions.MobileApps
             {
                 MobileAppUri = new Uri("https://someuri/")
             };
+
             // Act
+            new MobileTablePocoRule<TodoItem>()
             var table = await config.BindForTableAsync(attribute, typeof(IMobileServiceTable<TodoItem>)) as IMobileServiceTable<TodoItem>;
 
             // Assert
@@ -286,7 +290,7 @@ namespace Microsoft.Azure.WebJobs.Extensions.Tests.Extensions.MobileApps
             Assert.Equal("SomeOtherTable", table.TableName);
         }
 
-        private MobileAppsConfiguration InitializeConfig(string configApiKey, Uri configMobileAppUri)
+        private MobileTableContextFactory InitializeConfig(string configApiKey, Uri configMobileAppUri)
         {
             var config = new MobileAppsConfiguration
             {
@@ -309,7 +313,7 @@ namespace Microsoft.Azure.WebJobs.Extensions.Tests.Extensions.MobileApps
 
             config.Initialize(context);
 
-            return config;
+            return new MobileTableContextFactory(config, ;
         }
     }
 }

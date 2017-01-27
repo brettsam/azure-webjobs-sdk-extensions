@@ -2,16 +2,16 @@
 // Licensed under the MIT License. See License.txt in the project root for license information.
 
 using System;
-using System.Collections.Concurrent;
 using System.Globalization;
 using System.Linq;
-using System.Net.Http;
-using System.Reflection;
 using System.Threading.Tasks;
+using Microsoft.Azure.WebJobs.Extensions.MobileApps.Bindings;
+using Microsoft.Azure.WebJobs.Extensions.MobileApps.Config;
 using Microsoft.Azure.WebJobs.Host;
 using Microsoft.Azure.WebJobs.Host.Bindings;
 using Microsoft.Azure.WebJobs.Host.Config;
 using Microsoft.WindowsAzure.MobileServices;
+using Newtonsoft.Json.Linq;
 
 namespace Microsoft.Azure.WebJobs.Extensions.MobileApps
 {
@@ -22,11 +22,8 @@ namespace Microsoft.Azure.WebJobs.Extensions.MobileApps
     {
         internal const string AzureWebJobsMobileAppUriName = "AzureWebJobsMobileAppUri";
         internal const string AzureWebJobsMobileAppApiKeyName = "AzureWebJobsMobileAppApiKey";
-        internal readonly ConcurrentDictionary<string, IMobileServiceClient> ClientCache = new ConcurrentDictionary<string, IMobileServiceClient>();
 
-        private string _defaultApiKey;
-        private Uri _defaultMobileAppUri;
-        private INameResolver _nameResolver;
+        private MobileTableContextFactory _contextFactory;
 
         /// <summary>
         /// Constructs a new instance.
@@ -56,34 +53,38 @@ namespace Microsoft.Azure.WebJobs.Extensions.MobileApps
                 throw new ArgumentNullException("context");
             }
 
-            _nameResolver = context.Config.GetService<INameResolver>();
+            INameResolver nameResolver = context.Config.GetService<INameResolver>();
             IConverterManager converterManager = context.Config.GetService<IConverterManager>();
+            converterManager.AddConverter<object, JObject>((o) => JObject.FromObject(o));
 
             // Set defaults, to be used if no other values are found:
-            _defaultApiKey = _nameResolver.Resolve(AzureWebJobsMobileAppApiKeyName);
+            string defaultApiKey = nameResolver.Resolve(AzureWebJobsMobileAppApiKeyName);
 
-            string uriString = _nameResolver.Resolve(AzureWebJobsMobileAppUriName);
-            Uri.TryCreate(uriString, UriKind.Absolute, out _defaultMobileAppUri);
+            string uriString = nameResolver.Resolve(AzureWebJobsMobileAppUriName);
+            Uri defaultMobileAppUri;
+            Uri.TryCreate(uriString, UriKind.Absolute, out defaultMobileAppUri);
 
-            BindingFactory factory = new BindingFactory(_nameResolver, converterManager);
+            _contextFactory = new MobileTableContextFactory(this, defaultMobileAppUri, defaultApiKey, nameResolver);
+            BindingFactory factory = new BindingFactory(nameResolver, converterManager);
 
-            IBindingProvider outputProvider = factory.BindToGenericAsyncCollector<MobileTableAttribute>(BindForOutput, ThrowIfInvalidOutputItemType);
+            IBindingProvider outputProvider = factory.BindToGenericAsyncCollector<MobileTableAttribute>(BindForPocoOutput, ThrowIfInvalidOutputItemType);
+            IBindingProvider outputJObjectProvider = factory.BindToAsyncCollector<MobileTableAttribute, JObject>(BindForJObjectOutput);
 
-            IBindingProvider clientProvider = factory.BindToExactType<MobileTableAttribute, IMobileServiceClient>(BindForClient);
+            IBindingProvider clientProvider = factory.BindToInput<MobileTableAttribute, IMobileServiceClient>(false, typeof(MobileTableClientRule), _contextFactory);
 
-            IBindingProvider queryProvider = factory.BindToGenericItem<MobileTableAttribute>(BindForQueryAsync);
+            IBindingProvider queryProvider = factory.BindToInput<MobileTableAttribute, IMobileServiceTableQuery<OpenType>>(false, typeof(MobileTableQueryRule<>), _contextFactory);
             queryProvider = factory.AddFilter<MobileTableAttribute>(IsQueryType, queryProvider);
 
-            IBindingProvider jObjectTableProvider = factory.BindToExactType<MobileTableAttribute, IMobileServiceTable>(BindForTable);
+            IBindingProvider jObjectTableProvider = factory.BindToInput<MobileTableAttribute, IMobileServiceTable>(false, typeof(MobileTableJObjectRule), _contextFactory);
 
-            IBindingProvider tableProvider = factory.BindToGenericItem<MobileTableAttribute>(BindForTableAsync);
+            IBindingProvider tableProvider = factory.BindToInput<MobileTableAttribute, IMobileServiceTable<OpenType>>(false, typeof(MobileTablePocoRule<>), _contextFactory);
             tableProvider = factory.AddFilter<MobileTableAttribute>(IsTableType, tableProvider);
 
             IBindingProvider itemProvider = factory.BindToGenericValueProvider<MobileTableAttribute>(BindForItemAsync);
             itemProvider = factory.AddFilter<MobileTableAttribute>(IsItemType, itemProvider);
 
             IExtensionRegistry extensions = context.Config.GetService<IExtensionRegistry>();
-            extensions.RegisterBindingRules<MobileTableAttribute>(ValidateMobileAppUri, _nameResolver, outputProvider, clientProvider, jObjectTableProvider, queryProvider, tableProvider, itemProvider);
+            extensions.RegisterBindingRules<MobileTableAttribute>((attr, t) => ValidateMobileAppUri(attr, t, defaultMobileAppUri), nameResolver, outputProvider, outputJObjectProvider, clientProvider, jObjectTableProvider, queryProvider, tableProvider, itemProvider);
         }
 
         internal static bool IsQueryType(MobileTableAttribute attribute, Type paramType)
@@ -127,24 +128,12 @@ namespace Microsoft.Azure.WebJobs.Extensions.MobileApps
             return true;
         }
 
-        internal static void ThrowIfGenericArgumentIsInvalid(MobileTableAttribute attribute, Type paramType)
-        {
-            // Assume IsQueryType or IsTableType has already run -- so we know there is only one argument
-            Type argumentType = paramType.GetGenericArguments().Single();
-            ThrowIfInvalidItemType(attribute, argumentType);
-        }
-
         internal static bool ThrowIfInvalidOutputItemType(MobileTableAttribute attribute, Type paramType)
         {
-            // We explicitly allow object as a type to enable anonymous types, but TableName must be specified.
-            if (paramType == typeof(object))
+            // These will fall through to the JObject AsyncCollector
+            if (paramType == typeof(object) || paramType == typeof(JObject))
             {
-                if (string.IsNullOrEmpty(attribute.TableName))
-                {
-                    throw new InvalidOperationException("A parameter of type 'object' must have table name specified.");
-                }
-
-                return true;
+                return false;
             }
 
             return ThrowIfInvalidItemType(attribute, paramType);
@@ -154,17 +143,18 @@ namespace Microsoft.Azure.WebJobs.Extensions.MobileApps
         {
             if (!MobileAppUtility.IsValidItemType(paramType, attribute.TableName))
             {
-                throw new ArgumentException(string.Format("The type '{0}' cannot be used in a MobileTable binding. The type must either be 'JObject' or have a public string 'Id' property.", paramType.Name));
+                throw new ArgumentException(string.Format("The type '{0}' cannot be used in a MobileTable binding. The type must either be 'JObject', 'object', or have a public string 'Id' property.", paramType.Name));
             }
 
             return true;
         }
 
-        internal void ValidateMobileAppUri(MobileTableAttribute attribute, Type paramType)
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Usage", "CA1801:ReviewUnusedParameters", MessageId = "paramType")]
+        internal void ValidateMobileAppUri(MobileTableAttribute attribute, Type paramType, Uri defaultMobileAppUri)
         {
             if (MobileAppUri == null &&
                 string.IsNullOrEmpty(attribute.MobileAppUriSetting) &&
-                _defaultMobileAppUri == null)
+                defaultMobileAppUri == null)
             {
                 throw new InvalidOperationException(
                     string.Format(CultureInfo.CurrentCulture,
@@ -175,7 +165,7 @@ namespace Microsoft.Azure.WebJobs.Extensions.MobileApps
 
         internal Task<IValueBinder> BindForItemAsync(MobileTableAttribute attribute, Type paramType)
         {
-            MobileTableContext context = CreateContext(attribute);
+            MobileTableContext context = _contextFactory.CreateContext(attribute);
 
             Type genericType = typeof(MobileTableItemValueBinder<>).MakeGenericType(paramType);
             IValueBinder binder = (IValueBinder)Activator.CreateInstance(genericType, context);
@@ -183,142 +173,19 @@ namespace Microsoft.Azure.WebJobs.Extensions.MobileApps
             return Task.FromResult(binder);
         }
 
-        internal IMobileServiceTable BindForTable(MobileTableAttribute attribute)
+        internal MobileTableJObjectAsyncCollector BindForJObjectOutput(MobileTableAttribute attribute)
         {
-            MobileTableContext context = CreateContext(attribute);
-            return context.Client.GetTable(context.ResolvedAttribute.TableName);
+            MobileTableContext context = _contextFactory.CreateContext(attribute);
+            return new MobileTableJObjectAsyncCollector(context);
         }
 
-        internal async Task<object> BindForQueryAsync(MobileTableAttribute attribute, Type paramType)
+        internal object BindForPocoOutput(MobileTableAttribute attribute, Type paramType)
         {
-            object table = await BindForTableAsync(attribute, paramType);
-            MethodInfo createQueryMethod = table.GetType().GetMethod("CreateQuery");
+            MobileTableContext context = _contextFactory.CreateContext(attribute);
 
-            return createQueryMethod.Invoke(table, null);
-        }
-
-        internal Task<object> BindForTableAsync(MobileTableAttribute attribute, Type paramType)
-        {
-            MobileTableContext context = CreateContext(attribute);
-
-            // Assume that the Filter has already run.
-            Type tableType = paramType.GetGenericArguments().Single();
-
-            // If TableName is specified, add it to the internal table cache. Now items of this type
-            // will operate on the specified TableName.
-            if (!string.IsNullOrEmpty(context.ResolvedAttribute.TableName))
-            {
-                context.Client.AddToTableNameCache(tableType, context.ResolvedAttribute.TableName);
-            }
-
-            MethodInfo getTableMethod = GetGenericTableMethod();
-            MethodInfo getTableGenericMethod = getTableMethod.MakeGenericMethod(tableType);
-
-            return Task.FromResult(getTableGenericMethod.Invoke(context.Client, null));
-        }
-
-        private static MethodInfo GetGenericTableMethod()
-        {
-            return typeof(IMobileServiceClient).GetMethods()
-                .Where(m => m.IsGenericMethod && m.Name == "GetTable").Single();
-        }
-
-        internal IMobileServiceClient BindForClient(MobileTableAttribute attribute)
-        {
-            MobileTableContext context = CreateContext(attribute);
-            return context.Client;
-        }
-
-        internal object BindForOutput(MobileTableAttribute attribute, Type paramType)
-        {
-            MobileTableContext context = CreateContext(attribute);
-
-            Type collectorType = typeof(MobileTableAsyncCollector<>).MakeGenericType(paramType);
+            Type collectorType = typeof(MobileTablePocoAsyncCollector<>).MakeGenericType(paramType);
 
             return Activator.CreateInstance(collectorType, context);
-        }
-
-        internal Uri ResolveMobileAppUri(string attributeUriString)
-        {
-            // First, try the Attribute's Uri.
-            Uri attributeUri;
-            if (Uri.TryCreate(attributeUriString, UriKind.Absolute, out attributeUri))
-            {
-                return attributeUri;
-            }
-
-            // Second, try the config's Uri
-            if (MobileAppUri != null)
-            {
-                return MobileAppUri;
-            }
-
-            // Finally, fall back to the default.
-            return _defaultMobileAppUri;
-        }
-
-        internal MobileTableContext CreateContext(MobileTableAttribute attribute)
-        {
-            Uri resolvedUri = ResolveMobileAppUri(attribute.MobileAppUriSetting);
-            string resolvedApiKey = ResolveApiKey(attribute.ApiKeySetting);
-
-            return new MobileTableContext
-            {
-                Client = GetClient(resolvedUri, resolvedApiKey),
-                ResolvedAttribute = attribute
-            };
-        }
-
-        internal string ResolveApiKey(string attributeApiKey)
-        {
-            // The behavior for ApiKey is unique, so we do not use the AutoResolve
-            // functionality.
-            // If an attribute sets the ApiKeySetting to an empty string,
-            // that overwrites any default value and sets it to null.
-            // If ApiKeySetting is null, it returns the default value.
-
-            // First, if the key is an empty string, return null.
-            if (attributeApiKey != null && attributeApiKey.Length == 0)
-            {
-                return null;
-            }
-
-            // Second, if it is anything other than null, return the resolved value
-            if (attributeApiKey != null)
-            {
-                return _nameResolver.Resolve(attributeApiKey);
-            }
-
-            // Third, try the config's key
-            if (!string.IsNullOrEmpty(ApiKey))
-            {
-                return ApiKey;
-            }
-
-            // Finally, fall back to the default.
-            return _defaultApiKey;
-        }
-
-        internal IMobileServiceClient GetClient(Uri mobileAppUri, string apiKey)
-        {
-            string key = GetCacheKey(mobileAppUri, apiKey);
-            return ClientCache.GetOrAdd(key, (c) => CreateMobileServiceClient(ClientFactory, mobileAppUri, apiKey));
-        }
-
-        internal static string GetCacheKey(Uri mobileAppUri, string apiKey)
-        {
-            return string.Format("{0};{1}", mobileAppUri, apiKey);
-        }
-
-        internal static IMobileServiceClient CreateMobileServiceClient(IMobileServiceClientFactory factory, Uri mobileAppUri, string apiKey = null)
-        {
-            HttpMessageHandler[] handlers = null;
-            if (!string.IsNullOrEmpty(apiKey))
-            {
-                handlers = new[] { new MobileServiceApiKeyHandler(apiKey) };
-            }
-
-            return factory.CreateClient(mobileAppUri, handlers);
         }
     }
 }
