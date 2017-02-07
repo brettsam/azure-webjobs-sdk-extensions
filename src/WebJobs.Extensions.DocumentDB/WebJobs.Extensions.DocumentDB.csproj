@@ -101,6 +101,7 @@
   <ItemGroup>
     <Compile Include="Bindings\DocumentDBAsyncCollector.cs" />
     <Compile Include="Bindings\DocumentDBClientBuilder.cs" />
+    <Compile Include="Bindings\DocumentDBCollectorBuilder.cs" />
     <Compile Include="Bindings\DocumentDBItemValueBinder.cs" />
     <Compile Include="Config\DefaultDocumentDBServiceFactory.cs" />
     <Compile Include="Config\DocumentDBConfiguration.cs" />

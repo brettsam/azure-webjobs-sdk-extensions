@@ -67,7 +67,8 @@ namespace Microsoft.Azure.WebJobs.Extensions.MobileApps
 
             BindingFactory factory = new BindingFactory(_nameResolver, converterManager);
 
-            IBindingProvider outputProvider = factory.BindToGenericAsyncCollector<MobileTableAttribute>(BindForOutput, ThrowIfInvalidOutputItemType);
+            IBindingProvider outputProvider = factory.BindToCollector<MobileTableAttribute, OpenType>(typeof(MobileTableCollectorBuilder<>), this);
+            outputProvider = factory.AddFilter<MobileTableAttribute>(ThrowIfInvalidOutputItemType, outputProvider);
 
             IBindingProvider clientProvider = factory.BindToInput<MobileTableAttribute, IMobileServiceClient>(new MobileTableClientBuilder(this));
 
@@ -181,15 +182,6 @@ namespace Microsoft.Azure.WebJobs.Extensions.MobileApps
             IValueBinder binder = (IValueBinder)Activator.CreateInstance(genericType, context);
 
             return Task.FromResult(binder);
-        }
-
-        internal object BindForOutput(MobileTableAttribute attribute, Type paramType)
-        {
-            MobileTableContext context = CreateContext(attribute);
-
-            Type collectorType = typeof(MobileTableAsyncCollector<>).MakeGenericType(paramType);
-
-            return Activator.CreateInstance(collectorType, context);
         }
 
         internal Uri ResolveMobileAppUri(string attributeUriString)

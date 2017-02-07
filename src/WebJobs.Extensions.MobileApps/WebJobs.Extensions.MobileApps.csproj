@@ -119,6 +119,7 @@
       <SubType>Designer</SubType>
     </CodeAnalysisDictionary>
     <Compile Include="Bindings\MobileTableAsyncCollector.cs" />
+    <Compile Include="Bindings\MobileTableCollectorBuilder.cs" />
     <Compile Include="Bindings\MobileTableJObjectTableBuilder.cs" />
     <Compile Include="Bindings\MobileTablePocoTableBuilder.cs" />
     <Compile Include="Bindings\MobileTableQueryBuilder.cs" />

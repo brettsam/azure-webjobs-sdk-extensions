@@ -494,7 +494,7 @@ namespace Microsoft.Azure.WebJobs.Extensions.Tests.Extensions.MobileApps
         {
             // object should be treated like JObject and fail indexing if no TableName is specified
             public static void Broken(
-                [MobileTable] out object item)
+                [MobileTable] IAsyncCollector<object> item)
             {
                 item = null;
             }
