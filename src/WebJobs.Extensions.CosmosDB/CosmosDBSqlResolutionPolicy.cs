@@ -9,6 +9,7 @@ using System.Reflection;
 using Microsoft.Azure.Documents;
 using Microsoft.Azure.WebJobs.Host.Bindings;
 using Microsoft.Azure.WebJobs.Host.Bindings.Path;
+using Newtonsoft.Json.Linq;
 
 namespace Microsoft.Azure.WebJobs.Extensions.CosmosDB
 {
@@ -25,7 +26,7 @@ namespace Microsoft.Azure.WebJobs.Extensions.CosmosDB
             {
                 throw new ArgumentNullException(nameof(bindingData));
             }
-            
+
             if (!(resolvedAttribute is CosmosDBAttribute cosmosDBAttribute))
             {
                 throw new NotSupportedException($"This policy is only supported for {nameof(CosmosDBAttribute)}.");
@@ -36,62 +37,62 @@ namespace Microsoft.Azure.WebJobs.Extensions.CosmosDB
 
             // also build up a dictionary replacing '{token}' with '@token' 
             IDictionary<string, object> replacements = new Dictionary<string, object>();
-            foreach (var token in bindingTemplate.ParameterNames.Distinct())
+            foreach (var tokenName in bindingTemplate.TokenStrings.Distinct())
             {
-                object tokenObject = bindingData[token];
-                if (tokenObject is string tokenString)
-                {
-                    AddParameter(paramCollection, replacements, tokenString, token);
-                }
-                else if (tokenObject is IDictionary<string, string> tokenDictionary)
-                {
-                    IDictionary<string, object> tokens = new Dictionary<string, object>(StringComparer.OrdinalIgnoreCase);
-                    foreach (var item in tokenDictionary)
-                    {
-                        if (IsTokenInUse(bindingTemplate, token, item.Key))
-                        {
-                            AddParameter(paramCollection, tokens, item.Value, token, item.Key);
-                        }
-                    }
-                    replacements.Add(token, tokens);
-                }
+                string sqlTokenName = "@" + EscapeSqlParameterName(tokenName);
+
+                // We need to construct a JObject that nests like the token and will return our
+                // new SqlParameter as a replacement.                
+                UpdateReplacementData(replacements, tokenName, sqlTokenName);
+
+                // Resolve the token from the bindingData. This will resolve tokens like "a.b.c" automatically.
+                string tokenValue = BindingTemplate.ResolveToken(tokenName, bindingData);
+
+                paramCollection.Add(new SqlParameter(sqlTokenName, tokenValue));
             }
 
             cosmosDBAttribute.SqlQueryParameters = paramCollection;
 
-            string replacement = bindingTemplate.Bind(new ReadOnlyDictionary<string, object>(replacements));
-            return replacement;
-        }
-
-        private bool IsTokenInUse(BindingTemplate bindingTemplate, string firstTokenNameSegment, string secondTokenNameSegment)
-        {
-            string fullToken = GetFullTokenName(firstTokenNameSegment, secondTokenNameSegment);
-            return bindingTemplate.Pattern.Contains(fullToken);
-        }
-
-        private void AddParameter(SqlParameterCollection paramCollection, IDictionary<string, object> tokens, object sqlParamValue,
-            string firstTokenNameSegment, string secondTokenNameSegment = null)
-        {
-            string fullTokenName = GetFullTokenName(firstTokenNameSegment, secondTokenNameSegment);
-            string tokenName = secondTokenNameSegment ?? firstTokenNameSegment;
-
-            bool needsEscaping = !string.IsNullOrEmpty(secondTokenNameSegment);
-            string sqlToken = "@" + (needsEscaping ? EscapeSqlParameterName(fullTokenName) : fullTokenName);
-
-            paramCollection.Add(new SqlParameter(sqlToken, sqlParamValue));
-            tokens.Add(tokenName, sqlToken);
-        }
-
-        private string GetFullTokenName(string firstTokenNameSegment, string secondTokenNameSegment)
-        {
-            return string.IsNullOrEmpty(secondTokenNameSegment) ?
-                firstTokenNameSegment :
-                $"{firstTokenNameSegment}.{secondTokenNameSegment}";
+            return bindingTemplate.Bind(new ReadOnlyDictionary<string, object>(replacements));
         }
 
         private string EscapeSqlParameterName(string name)
         {
-            return Guid.NewGuid().ToString("N");
+            // periods and hyphens are not allowed in SqlParameter names
+            const char underscore = '_';
+            return name.Replace('.', underscore).Replace('-', underscore);
+        }
+
+        internal static void UpdateReplacementData(IDictionary<string, object> replacements, string tokenString, string dataValue)
+        {
+            string[] parts = tokenString.Split('.');
+
+            // Token has only one part. No need for nested objects.
+            if (parts.Length == 1)
+            {
+                replacements[tokenString] = dataValue;
+                return;
+            }
+
+            JObject rootJObject = null;
+            if (!replacements.TryGetValue(parts[0], out object root))
+            {
+                root = new JObject();
+                replacements[parts[0]] = root;
+            }
+
+            rootJObject = root as JObject;
+
+            JToken current = rootJObject;
+            for (int i = 1; i < parts.Length - 1; i++)
+            {
+                JToken previous = current;
+                current = new JObject();
+                previous[parts[i]] = current;
+            }
+
+            // set the value at the innermost level.
+            current[parts.Last()] = dataValue;
         }
     }
 }
