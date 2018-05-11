@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using Microsoft.Extensions.Logging;
 
 namespace Microsoft.Azure.WebJobs.Extensions.Tests.Common
@@ -10,16 +11,17 @@ namespace Microsoft.Azure.WebJobs.Extensions.Tests.Common
     public class TestLogger : ILogger
     {
         private readonly Func<string, LogLevel, bool> _filter;
+        private Action<LogMessage> _logAction;
+        private IList<LogMessage> _logMessages = new List<LogMessage>();
 
-        public TestLogger(string category, Func<string, LogLevel, bool> filter = null)
+        public TestLogger(string category, Func<string, LogLevel, bool> filter = null, Action<LogMessage> logAction = null)
         {
             Category = category;
             _filter = filter;
+            _logAction = logAction;
         }
 
         public string Category { get; private set; }
-
-        public IList<LogMessage> LogMessages { get; } = new List<LogMessage>();
 
         public IDisposable BeginScope<TState>(TState state)
         {
@@ -31,14 +33,18 @@ namespace Microsoft.Azure.WebJobs.Extensions.Tests.Common
             return _filter?.Invoke(Category, logLevel) ?? true;
         }
 
-        public void Log<TState>(LogLevel logLevel, EventId eventId, TState state, Exception exception, Func<TState, Exception, string> formatter)
+        public IList<LogMessage> GetLogMessages() => _logMessages.ToList();
+
+        public void ClearLogMessages() => _logMessages.Clear();
+
+        public virtual void Log<TState>(LogLevel logLevel, EventId eventId, TState state, Exception exception, Func<TState, Exception, string> formatter)
         {
             if (!IsEnabled(logLevel))
             {
                 return;
             }
 
-            LogMessages.Add(new LogMessage
+            LogMessage logMessage = new LogMessage
             {
                 Level = logLevel,
                 EventId = eventId,
@@ -46,27 +52,15 @@ namespace Microsoft.Azure.WebJobs.Extensions.Tests.Common
                 Exception = exception,
                 FormattedMessage = formatter(state, exception),
                 Category = Category
-            });
+            };
+
+            _logMessages.Add(logMessage);
+            _logAction?.Invoke(logMessage);
         }
-    }
-
-    public class LogMessage
-    {
-        public LogLevel Level { get; set; }
-
-        public EventId EventId { get; set; }
-
-        public IEnumerable<KeyValuePair<string, object>> State { get; set; }
-
-        public Exception Exception { get; set; }
-
-        public string FormattedMessage { get; set; }
-
-        public string Category { get; set; }
 
         public override string ToString()
         {
-            return $"[{Category}] {FormattedMessage}";
+            return Category;
         }
     }
 }

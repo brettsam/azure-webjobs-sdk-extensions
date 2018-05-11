@@ -5,6 +5,13 @@
     <TargetFramework>netcoreapp2.0</TargetFramework>
     <Version>2.0.0-beta1$(VersionSuffix)</Version>
   </PropertyGroup>
+  <ItemGroup>
+    <Compile Remove="Samples\MobileAppSamples.cs" />
+    <Compile Remove="Samples\SampleSamples.cs" />
+    <Compile Remove="Samples\SendGridSamples.cs" />
+    <Compile Remove="Samples\TableSamples.cs" />
+    <Compile Remove="Samples\TwilioSamples.cs" />
+  </ItemGroup>
 
   <ItemGroup>
     <Folder Include="Properties\" />
@@ -15,12 +22,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\Sample.Extension\Sample.Extension.csproj" />
     <ProjectReference Include="..\WebJobs.Extensions.CosmosDB\WebJobs.Extensions.CosmosDB.csproj" />
-    <ProjectReference Include="..\WebJobs.Extensions.Http\WebJobs.Extensions.Http.csproj" />
-    <ProjectReference Include="..\WebJobs.Extensions.MobileApps\WebJobs.Extensions.MobileApps.csproj" />
-    <ProjectReference Include="..\WebJobs.Extensions.SendGrid\WebJobs.Extensions.SendGrid.csproj" />
-    <ProjectReference Include="..\WebJobs.Extensions.Twilio\WebJobs.Extensions.Twilio.csproj" />
     <ProjectReference Include="..\WebJobs.Extensions\WebJobs.Extensions.csproj" />
   </ItemGroup>
 

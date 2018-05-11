@@ -18,9 +18,9 @@ namespace Microsoft.Azure.WebJobs.Extensions.CosmosDB
         private readonly INameResolver _nameResolver;
         private string _monitorConnectionString;
         private string _leasesConnectionString;
-        private CosmosDBConfiguration _config;
+        private CosmosDBExtensionConfigProvider _config;
 
-        public CosmosDBTriggerAttributeBindingProvider(INameResolver nameResolver, CosmosDBConfiguration config, ChangeFeedHostOptions leasesOptions = null)
+        public CosmosDBTriggerAttributeBindingProvider(INameResolver nameResolver, CosmosDBExtensionConfigProvider config, ChangeFeedHostOptions leasesOptions = null)
         {
             _nameResolver = nameResolver;
             _config = config;
@@ -42,8 +42,8 @@ namespace Microsoft.Azure.WebJobs.Extensions.CosmosDB
                 return null;
             }
 
-            _monitorConnectionString = _nameResolver.Resolve(CosmosDBConfiguration.AzureWebJobsCosmosDBConnectionStringName);
-            _leasesConnectionString = _nameResolver.Resolve(CosmosDBConfiguration.AzureWebJobsCosmosDBConnectionStringName);
+            _monitorConnectionString = _nameResolver.Resolve(CosmosDBExtensionConfigProvider.AzureWebJobsCosmosDBConnectionStringName);
+            _leasesConnectionString = _nameResolver.Resolve(CosmosDBExtensionConfigProvider.AzureWebJobsCosmosDBConnectionStringName);
 
             DocumentCollectionInfo documentCollectionLocation;
             DocumentCollectionInfo leaseCollectionLocation;
@@ -127,7 +127,7 @@ namespace Microsoft.Azure.WebJobs.Extensions.CosmosDB
                 throw new InvalidOperationException(
                     string.Format(CultureInfo.CurrentCulture,
                     "The CosmosDBTrigger connection string must be set either via a '{0}' app setting, via the CosmosDBTriggerAttribute.ConnectionStringSetting property or via DocumentDBConfiguration.ConnectionString.",
-                    CosmosDBConfiguration.AzureWebJobsCosmosDBConnectionStringName));
+                    CosmosDBExtensionConfigProvider.AzureWebJobsCosmosDBConnectionStringName));
             }
 
             return connectionString;

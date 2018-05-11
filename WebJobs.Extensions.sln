@@ -36,6 +36,14 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "WebJobs.Extensions.Twilio",
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "WebJobs.Extensions.CosmosDB", "src\WebJobs.Extensions.CosmosDB\WebJobs.Extensions.CosmosDB.csproj", "{A0DE3BF4-AD56-44D9-8404-8E0778AE5CA0}"
 EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "WebJobs.Extensions.CosmosDB.Tests", "test\WebJobs.Extensions.CosmosDB.Tests\WebJobs.Extensions.CosmosDB.Tests.csproj", "{1660D6E8-C811-4CA8-BABC-227C5921BBB1}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "WebJobs.Extensions.TestCommon", "test\WebJobs.Extensions.TestCommon\WebJobs.Extensions.TestCommon.csproj", "{B09CA7FC-0E38-4C66-AC76-7EF5004B4EBB}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "samples", "samples", "{82D6283B-1618-4037-BEA3-802A52589F9F}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CosmosDBSample", "samples\CosmosDBSample\CosmosDBSample.csproj", "{7EBCE412-06B9-4347-9E8A-CC5365D2DC0E}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -78,6 +86,18 @@ Global
 		{A0DE3BF4-AD56-44D9-8404-8E0778AE5CA0}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{A0DE3BF4-AD56-44D9-8404-8E0778AE5CA0}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{A0DE3BF4-AD56-44D9-8404-8E0778AE5CA0}.Release|Any CPU.Build.0 = Release|Any CPU
+		{1660D6E8-C811-4CA8-BABC-227C5921BBB1}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{1660D6E8-C811-4CA8-BABC-227C5921BBB1}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{1660D6E8-C811-4CA8-BABC-227C5921BBB1}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{1660D6E8-C811-4CA8-BABC-227C5921BBB1}.Release|Any CPU.Build.0 = Release|Any CPU
+		{B09CA7FC-0E38-4C66-AC76-7EF5004B4EBB}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{B09CA7FC-0E38-4C66-AC76-7EF5004B4EBB}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{B09CA7FC-0E38-4C66-AC76-7EF5004B4EBB}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{B09CA7FC-0E38-4C66-AC76-7EF5004B4EBB}.Release|Any CPU.Build.0 = Release|Any CPU
+		{7EBCE412-06B9-4347-9E8A-CC5365D2DC0E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{7EBCE412-06B9-4347-9E8A-CC5365D2DC0E}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{7EBCE412-06B9-4347-9E8A-CC5365D2DC0E}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{7EBCE412-06B9-4347-9E8A-CC5365D2DC0E}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -92,6 +112,9 @@ Global
 		{4B1CA665-5F3E-4A0A-BEFC-FC174BB1BABA} = {1118E0AD-83C8-4B67-859B-FCDEF54338C1}
 		{4F335FB9-2BE8-4B51-9CE9-01465CCF05CB} = {1118E0AD-83C8-4B67-859B-FCDEF54338C1}
 		{A0DE3BF4-AD56-44D9-8404-8E0778AE5CA0} = {1118E0AD-83C8-4B67-859B-FCDEF54338C1}
+		{1660D6E8-C811-4CA8-BABC-227C5921BBB1} = {6D6CF06F-EFCF-4E01-99F1-CB7991C279D8}
+		{B09CA7FC-0E38-4C66-AC76-7EF5004B4EBB} = {6D6CF06F-EFCF-4E01-99F1-CB7991C279D8}
+		{7EBCE412-06B9-4347-9E8A-CC5365D2DC0E} = {82D6283B-1618-4037-BEA3-802A52589F9F}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {821EF04F-5408-46AD-94ED-0E939B89D4B8}

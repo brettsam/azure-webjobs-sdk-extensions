@@ -4,8 +4,6 @@
 using System.IO;
 using Microsoft.Azure.WebJobs;
 using Microsoft.Azure.WebJobs.Extensions.Files;
-using Microsoft.Azure.WebJobs.Extensions.SendGrid;
-using SendGrid.Helpers.Mail;
 using WebJobsSandbox;
 
 namespace ExtensionsSample
@@ -27,18 +25,8 @@ namespace ExtensionsSample
 
             config.UseFiles(filesConfig);
             config.UseTimers();
-            config.UseSample();
-            config.UseMobileApps();
-            config.UseTwilioSms();
             config.UseCore();
             config.UseCosmosDB();
-
-            var sendGridConfiguration = new SendGridConfiguration()
-            {
-                ToAddress = new EmailAddress("admin@webjobssamples.com", "WebJobs Extensions Samples"),
-                FromAddress = new EmailAddress("samples@webjobssamples.com", "WebJobs Extensions Samples")
-            };
-            config.UseSendGrid(sendGridConfiguration);
 
             EnsureSampleDirectoriesExist(filesConfig.RootPath);
 
@@ -50,16 +38,11 @@ namespace ExtensionsSample
             config.TypeLocator = new SamplesTypeLocator(
                 typeof(FileSamples),
                 typeof(MiscellaneousSamples),
-                typeof(SampleSamples),
-                typeof(TableSamples),
                 typeof(TimerSamples));
 
             // Some direct invocations to demonstrate various binding scenarios
             host.Call(typeof(MiscellaneousSamples).GetMethod("ExecutionContext"));
             host.Call(typeof(FileSamples).GetMethod("ReadWrite"));
-            host.Call(typeof(SampleSamples).GetMethod("Sample_BindToStream"));
-            host.Call(typeof(SampleSamples).GetMethod("Sample_BindToString"));
-            host.Call(typeof(TableSamples).GetMethod("CustomBinding"));
 
             host.RunAndBlock();
         }

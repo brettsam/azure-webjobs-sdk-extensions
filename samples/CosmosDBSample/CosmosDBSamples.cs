@@ -26,9 +26,9 @@ namespace ExtensionsSample
         // Other supported types:
         //   out T[]
         //   IAsyncCollector<T>
-        //   ICollector<T>        
+        //   ICollector<T>
+        [NoAutomaticTrigger]
         public static void InsertDocument(
-            [TimerTrigger("00:01")] TimerInfo timer,
             [CosmosDB("ItemDb", "ItemCollection", CreateIfNotExists = true)] out ItemDoc newItem)
         {
             newItem = new ItemDoc()
@@ -74,9 +74,8 @@ namespace ExtensionsSample
 
         // DocumentClient input binding
         //   The binding supplies a DocumentClient directly.
-        [Disable]
+        [NoAutomaticTrigger]
         public static void DocumentClient(
-            [TimerTrigger("00:01", RunOnStartup = true)] TimerInfo timer,
             [CosmosDB] DocumentClient client,
             TraceWriter log)
         {
